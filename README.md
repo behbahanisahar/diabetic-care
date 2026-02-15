@@ -60,7 +60,7 @@ BLOB_READ_WRITE_TOKEN="vercel_blob_rw_..."  # برای آپلود فایل رو�
    - `ADMIN_PASSWORD`
    - `NEXT_PUBLIC_APP_URL` = `https://your-app.vercel.app`
    - `BLOB_READ_WRITE_TOKEN` (از Blob store)
-6. **Deploy**: `npx prisma migrate deploy` به‌صورت خودکار در Build اجرا می‌شود (در `package.json` اضافه کنید)
+6. **Deploy**: پس از اولین دیپلوی، یک‌بار مایگریشن را اجرا کنید (از رایانه خود با همان `DATABASE_URL`): `npx prisma migrate deploy`
 
 ## ساختار پروژه
 
