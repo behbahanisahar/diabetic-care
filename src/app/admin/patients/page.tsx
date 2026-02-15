@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -16,6 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toPersianDigits } from "@/lib/utils";
 
 interface Patient {
@@ -155,31 +155,52 @@ export default function PatientsListPage() {
                     </div>
                   </div>
                 </div>
-                <div className="flex shrink-0 flex-wrap items-center justify-end gap-1 sm:justify-start">
-                  <Button variant="outline" size="sm" className="h-9 rounded-lg px-3" asChild>
-                    <Link href={`/admin/patients/${p.id}`}>
-                      <Pencil className="size-3.5 me-1" />
-                      ویرایش
-                    </Link>
-                  </Button>
-                  <Button variant="outline" size="icon" className="h-9 w-9 shrink-0 rounded-lg" onClick={() => handleDownloadQR(p)} title="دانلود QR">
-                    <Download className="size-4" />
-                  </Button>
-                  <Button variant="outline" size="icon" className="h-9 w-9 shrink-0 rounded-lg" asChild title="مشاهده">
-                    <Link href={`/patient/${p.qrCodeId}`} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="size-4" />
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-9 w-9 shrink-0 rounded-lg border-destructive/30 text-destructive hover:bg-destructive/10 hover:border-destructive/50"
-                    onClick={() => setPatientToDelete(p)}
-                    title="حذف"
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
-                </div>
+                <TooltipProvider delayDuration={300}>
+                  <div className="flex shrink-0 flex-wrap items-center justify-end gap-1 sm:justify-start">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="outline" size="sm" className="h-9 rounded-lg px-3" asChild>
+                          <Link href={`/admin/patients/${p.id}`}>
+                            <Pencil className="size-3.5 me-1" />
+                            ویرایش
+                          </Link>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">ویرایش</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="outline" size="icon" className="h-9 w-9 shrink-0 rounded-lg" onClick={() => handleDownloadQR(p)}>
+                          <Download className="size-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">دانلود QR</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="outline" size="icon" className="h-9 w-9 shrink-0 rounded-lg" asChild>
+                          <Link href={`/patient/${p.qrCodeId}`} target="_blank" rel="noopener noreferrer">
+                            <ExternalLink className="size-4" />
+                          </Link>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">مشاهده صفحه بیمار</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-9 w-9 shrink-0 rounded-lg border-destructive/30 text-destructive hover:bg-destructive/10 hover:border-destructive/50"
+                          onClick={() => setPatientToDelete(p)}
+                        >
+                          <Trash2 className="size-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">حذف</TooltipContent>
+                    </Tooltip>
+                  </div>
+                </TooltipProvider>
               </div>
             ))}
           </div>

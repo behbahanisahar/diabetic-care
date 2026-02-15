@@ -6,25 +6,26 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --primary: oklch(0.55 0.14 195);
+  /* Sharp blue primary (#0c4a6e / sky-900) – used everywhere */
+  --primary: oklch(0.30 0.09 245);
   --primary-foreground: oklch(0.985 0 0);
-  --accent: oklch(0.97 0.01 195);
+  --accent: oklch(0.96 0.01 245);
   --radius: 0.75rem;
-  --background: oklch(0.99 0.002 240);
-  --foreground: oklch(0.13 0.02 260);
+  --background: oklch(0.99 0 0);
+  --foreground: oklch(0.18 0.02 260);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.13 0.02 260);
+  --card-foreground: oklch(0.18 0.02 260);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.13 0.02 260);
-  --secondary: oklch(0.96 0.01 195);
-  --secondary-foreground: oklch(0.25 0.04 250);
-  --muted: oklch(0.96 0.008 240);
-  --muted-foreground: oklch(0.45 0.02 260);
-  --accent-foreground: oklch(0.2 0.03 250);
+  --popover-foreground: oklch(0.18 0.02 260);
+  --secondary: oklch(0.94 0.01 245);
+  --secondary-foreground: oklch(0.28 0.04 245);
+  --muted: oklch(0.96 0.005 260);
+  --muted-foreground: oklch(0.42 0.02 260);
+  --accent-foreground: oklch(0.28 0.04 245);
   --destructive: oklch(0.55 0.22 25);
-  --border: oklch(0.92 0.01 240);
-  --input: oklch(0.94 0.01 240);
-  --ring: oklch(0.55 0.14 195);
+  --border: oklch(0.9 0.01 260);
+  --input: oklch(0.93 0.008 260);
+  --ring: oklch(0.30 0.09 245);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
