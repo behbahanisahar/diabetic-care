@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 import PatientForm from "../PatientForm";
 import { Button } from "@/components/ui/button";
+import { prepareFormDataWithResizedImages } from "@/lib/image-preview";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -89,9 +90,10 @@ export default function EditPatientPage() {
   const handleSubmit = async (formData: FormData) => {
     setLoading(true);
     try {
+      const body = await prepareFormDataWithResizedImages(formData);
       const res = await fetch(`/api/patients/${id}`, {
         method: "PUT",
-        body: formData,
+        body,
       });
       if (!res.ok) {
         const data = await res.json();

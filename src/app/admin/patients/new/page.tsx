@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import PatientForm from "../PatientForm";
 import { Button } from "@/components/ui/button";
+import { prepareFormDataWithResizedImages } from "@/lib/image-preview";
 
 interface City {
   id: number;
@@ -28,9 +29,10 @@ export default function NewPatientPage() {
   const handleSubmit = async (formData: FormData) => {
     setLoading(true);
     try {
+      const body = await prepareFormDataWithResizedImages(formData);
       const res = await fetch("/api/patients", {
         method: "POST",
-        body: formData,
+        body,
       });
       const data = await res.json();
       if (!res.ok) {
