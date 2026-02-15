@@ -1,6 +1,10 @@
 import Link from "next/link";
+import { isAdminAuthenticated } from "@/lib/auth";
+import { HeaderAuth } from "./header-auth";
 
-export function SiteHeader() {
+export async function SiteHeader() {
+  const authenticated = await isAdminAuthenticated();
+
   return (
     <header className="sticky top-0 z-50 border-b border-slate-100 bg-white/80 backdrop-blur-md">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
@@ -12,12 +16,7 @@ export function SiteHeader() {
           <span className="text-sm font-semibold text-slate-900">مراقبت دیابتی</span>
         </Link>
         <nav className="flex items-center gap-4">
-          <Link
-            href="/admin"
-            className="text-sm font-medium text-slate-600 transition-colors hover:text-primary"
-          >
-            ورود
-          </Link>
+          <HeaderAuth authenticated={authenticated} />
         </nav>
       </div>
     </header>
