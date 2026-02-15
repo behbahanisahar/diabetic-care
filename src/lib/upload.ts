@@ -24,6 +24,13 @@ export async function uploadFile(
     return blob.url;
   }
 
+  // On Vercel, filesystem is read-only – Blob storage is required
+  if (process.env.VERCEL) {
+    throw new Error(
+      "BLOB_READ_WRITE_TOKEN is not set. Add it in Vercel Settings → Environment Variables for file uploads."
+    );
+  }
+
   const uploadsDir = path.join(process.cwd(), "public", "uploads");
   await mkdir(uploadsDir, { recursive: true });
   const filepath = path.join(uploadsDir, filename);
