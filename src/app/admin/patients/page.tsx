@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { SearchIcon, Pencil, Download, ExternalLink, Trash2, ChevronRight, ChevronLeft } from "lucide-react";
+import { SearchIcon, Pencil, Download, ExternalLink, Trash2, ChevronRight, ChevronLeft, QrCode, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,9 @@ export default function PatientsListPage() {
   const [loading, setLoading] = useState(true);
   const [patientToDelete, setPatientToDelete] = useState<Patient | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [qrModalPatient, setQrModalPatient] = useState<Patient | null>(null);
+  const [qrModalImage, setQrModalImage] = useState<string | null>(null);
+  const [qrModalLoading, setQrModalLoading] = useState(false);
 
   useEffect(() => {
     const q = new URLSearchParams();
@@ -68,6 +71,21 @@ export default function PatientsListPage() {
       })
       .finally(() => setLoading(false));
   }, [search, page]);
+
+  useEffect(() => {
+    if (!qrModalPatient) {
+      setQrModalImage(null);
+      return;
+    }
+    setQrModalLoading(true);
+    setQrModalImage(null);
+    fetch(`/api/patients/${qrModalPatient.id}/qr`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.qrCode) setQrModalImage(data.qrCode);
+      })
+      .finally(() => setQrModalLoading(false));
+  }, [qrModalPatient]);
 
   const handleDownloadQR = async (p: Patient) => {
     const res = await fetch(`/api/patients/${p.id}/qr`);
@@ -194,27 +212,42 @@ export default function PatientsListPage() {
                     </Tooltip>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <div className="flex h-9 shrink-0 items-center overflow-hidden rounded-lg border border-input bg-background">
-                          <Link
-                            href={`/patient/${p.qrCodeId}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex h-full items-center gap-1.5 px-3 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
-                          >
-                            <ExternalLink className="size-3.5" />
-                            مشاهده
-                          </Link>
-                          <button
-                            type="button"
-                            onClick={() => handleDownloadQR(p)}
-                            className="flex h-full items-center justify-center border-s border-input px-2 hover:bg-accent hover:text-accent-foreground"
-                            title="دانلود QR"
-                          >
-                            <Download className="size-3.5" />
-                          </button>
-                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-9 rounded-lg px-3"
+                          onClick={() => setQrModalPatient(p)}
+                        >
+                          <QrCode className="size-3.5 me-1" />
+                          نمایش QR
+                        </Button>
                       </TooltipTrigger>
-                      <TooltipContent side="top">مشاهده صفحه بیمار / دانلود QR</TooltipContent>
+                      <TooltipContent side="top">اول QR را ببینید، سپس دانلود یا مشاهده صفحه</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="outline" size="sm" className="h-9 rounded-lg px-3" asChild>
+                          <Link href={`/patient/${p.qrCodeId}`} target="_blank" rel="noopener noreferrer">
+                            <ExternalLink className="size-3.5 me-1" />
+                            مشاهده صفحه
+                          </Link>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">مشاهده صفحه عمومی بیمار</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-9 rounded-lg px-3"
+                          onClick={() => handleDownloadQR(p)}
+                        >
+                          <Download className="size-3.5 me-1" />
+                          دانلود QR
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">دانلود QR کد</TooltipContent>
                     </Tooltip>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -269,6 +302,86 @@ export default function PatientsListPage() {
           </div>
         )}
       </div>
+
+      {/* QR modal: اول کاربر QR را می‌بیند، بعد می‌تواند دانلود یا مشاهده صفحه */}
+      {qrModalPatient && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="qr-modal-title"
+        >
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl" dir="rtl">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 id="qr-modal-title" className="text-lg font-semibold text-slate-900">
+                QR کد — {qrModalPatient.firstName} {qrModalPatient.lastName}
+              </h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="rounded-lg"
+                onClick={() => setQrModalPatient(null)}
+              >
+                <ArrowRight className="size-4 me-1" />
+                برگشت
+              </Button>
+            </div>
+            <div className="flex flex-col items-center gap-4">
+              {qrModalLoading ? (
+                <div className="flex size-52 items-center justify-center rounded-xl border border-slate-200 bg-slate-50">
+                  <div className="size-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                </div>
+              ) : qrModalImage ? (
+                <div className="rounded-xl border border-slate-200 bg-white p-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={qrModalImage} alt="QR کد بیمار" className="h-52 w-52" />
+                </div>
+              ) : (
+                <p className="text-sm text-slate-500">بارگذاری QR ناموفق بود.</p>
+              )}
+              <div className="flex w-full flex-wrap items-center justify-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-lg"
+                  onClick={() => setQrModalPatient(null)}
+                >
+                  <ArrowRight className="size-4 me-1" />
+                  برگشت
+                </Button>
+                {qrModalImage && (
+                  <>
+                    <Button
+                      size="sm"
+                      className="rounded-lg"
+                      onClick={() => {
+                        const link = document.createElement("a");
+                        link.href = qrModalImage;
+                        link.download = `qr-${qrModalPatient.firstName}-${qrModalPatient.lastName}.png`;
+                        link.click();
+                      }}
+                    >
+                      <Download className="size-4 me-1" />
+                      دانلود QR کد
+                    </Button>
+                    <Button size="sm" className="rounded-lg" asChild>
+                      <Link
+                        href={`/patient/${qrModalPatient.qrCodeId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => setQrModalPatient(null)}
+                      >
+                        <ExternalLink className="size-4 me-1" />
+                        مشاهده صفحه بیمار
+                      </Link>
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <AlertDialog open={!!patientToDelete} onOpenChange={(open) => !open && setPatientToDelete(null)}>
         <AlertDialogContent>

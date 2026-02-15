@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { toPersianDigits, normalizeToAsciiDigits } from "@/lib/utils";
+import { ArrowRight } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +40,20 @@ export default async function PublicPatientPage({ params }: Props) {
     notFound();
   }
 
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const pageUrl = `${baseUrl}/patient/${patient.qrCodeId}`;
+  let qrDataUrl: string | null = null;
+  try {
+    const QRCode = (await import("qrcode")).default;
+    qrDataUrl = await QRCode.toDataURL(pageUrl, {
+      width: 512,
+      margin: 2,
+      color: { dark: "#0f172a", light: "#ffffff" },
+    });
+  } catch {
+    // ignore
+  }
+
   const diabetesLabel =
     patient.diabetesType === "type1"
       ? "دیابت نوع ۱"
@@ -50,6 +66,15 @@ export default async function PublicPatientPage({ params }: Props) {
   return (
     <div className="min-h-screen bg-slate-50" dir="rtl">
       <div className="mx-auto max-w-xl px-4 py-6 sm:py-10">
+        {/* Back button */}
+        <div className="mb-4">
+          <Button variant="ghost" size="sm" className="rounded-lg text-slate-600" asChild>
+            <Link href="/" className="inline-flex items-center gap-1">
+              <ArrowRight className="size-4" />
+              برگشت
+            </Link>
+          </Button>
+        </div>
         {/* Header */}
         <p className="mb-6 text-center text-xs font-medium tracking-wide text-slate-500">
           سامانه مراقبت دیابتی ایران
@@ -166,6 +191,27 @@ export default async function PublicPatientPage({ params }: Props) {
           <div className="mb-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">توضیحات</h2>
             <p className="leading-relaxed text-slate-800">{patient.notes}</p>
+          </div>
+        )}
+
+        {/* QR code: show first, then option to download */}
+        {qrDataUrl && (
+          <div className="mb-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">QR کد این صفحه</h2>
+            <div className="flex flex-col items-center gap-4">
+              <div className="rounded-xl border border-slate-200 bg-white p-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={qrDataUrl} alt="QR کد بیمار" className="h-52 w-52 sm:h-64 sm:w-64" />
+              </div>
+              <Button size="sm" className="rounded-xl" asChild>
+                <a
+                  href={qrDataUrl}
+                  download={`qr-${patient.firstName}-${patient.lastName}.png`}
+                >
+                  دانلود QR کد
+                </a>
+              </Button>
+            </div>
           </div>
         )}
 
