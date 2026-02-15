@@ -1,0 +1,30 @@
+// Diabetic Care - Iranian Medical Patient Management
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Patient {
+  id                    String   @id @default(cuid())
+  qrCodeId              String   @unique // Unique ID for QR code URL
+  firstName             String
+  lastName              String
+  nationalId            String
+  birthCertificateId    String?  // شماره شناسنامه
+  city                  String
+  placeOfLiving         String?
+  birthDate             String?
+  address               String?
+  nationalIdPhoto       String?  // Path to uploaded file
+  birthCertificatePhoto String?  // Path to uploaded file
+  bloodType             String?
+  diabetesType          String?  // "type1" | "type2" | "none"
+  examinationLink       String?
+  emergencyContact      String?
+  notes                 String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}

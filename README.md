@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# سامانه مراقبت دیابتی | Diabetic Care
 
-## Getting Started
+سامانه جامع ثبت و مدیریت اطلاعات بیماران دیابتی در ایران با تولید QR کد منحصربه‌فرد برای هر بیمار.
 
-First, run the development server:
+## ویژگی‌ها
+
+- **ثبت بیمار**: فرم کامل با نام، نام خانوادگی، کد ملی، شهر، محل سکونت، تاریخ تولد، آدرس، گروه خونی، نوع دیابت (۱ یا ۲)، لینک معاینه، تماس اضطراری و آپلود تصاویر کارت ملی و شناسنامه
+- **QR کد یکتا**: هر بیمار یک QR کد منحصربه‌فرد دریافت می‌کند
+- **جستجو و فیلتر**: جستجوی بیماران بر اساس نام، کد ملی، شهر و...
+- **دانلود QR**: امکان دانلود QR کد هر بیمار
+- **صفحه عمومی**: هنگام اسکن QR، اطلاعات بیمار به صورت خوانا نمایش داده می‌شود
+- **امنیت**: تنها پرسنل پزشکی (با رمز عبور) می‌توانند داده‌ها را ویرایش کنند
+
+## شهرها
+
+لیست شهرهای ایران از API عمومی Divar دریافت می‌شود: `https://api.divar.ir/v8/places/cities`
+
+## نصب و اجرا
 
 ```bash
+# نصب وابستگی‌ها
+npm install
+
+# کپی فایل محیطی
+cp .env.example .env
+
+# تنظیم DATABASE_URL (PostgreSQL)
+# برای توسعه محلی می‌توانید از Neon یا Docker استفاده کنید
+
+# ساخت دیتابیس
+npx prisma migrate deploy
+
+# اجرای سرور توسعه
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+سپس به آدرس [http://localhost:3000](http://localhost:3000) مراجعه کنید.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## تنظیمات محیطی
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+فایل `.env` را ایجاد کنید (از `.env.example` کپی کنید):
 
-## Learn More
+```env
+DATABASE_URL="postgresql://..."
+ADMIN_PASSWORD="رمز_عبور_مدیریت"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+BLOB_READ_WRITE_TOKEN="vercel_blob_rw_..."  # برای آپلود فایل روی Vercel
+```
 
-To learn more about Next.js, take a look at the following resources:
+## استقرار روی Vercel
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **پوش آپدیت به GitHub**
+2. **اتصال پروژه در Vercel**: Import repo در [vercel.com](https://vercel.com)
+3. **افزودن دیتابیس PostgreSQL**:
+   - Vercel Postgres (Storage > Create > Postgres)
+   - یا Neon از [neon.tech](https://neon.tech)
+4. **افزودن Vercel Blob**: Storage > Create > Blob
+5. **متغیرهای محیطی**:
+   - `DATABASE_URL` (از دیتابیس)
+   - `ADMIN_PASSWORD`
+   - `NEXT_PUBLIC_APP_URL` = `https://your-app.vercel.app`
+   - `BLOB_READ_WRITE_TOKEN` (از Blob store)
+6. **Deploy**: `npx prisma migrate deploy` به‌صورت خودکار در Build اجرا می‌شود (در `package.json` اضافه کنید)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## ساختار پروژه
 
-## Deploy on Vercel
+```
+src/
+├── app/
+│   ├── admin/          # پنل مدیریت (ورود، لیست بیماران، فرم)
+│   ├── api/            # API routes
+│   ├── patient/[qrCodeId]/   # صفحه عمومی (اسکن QR)
+│   └── page.tsx        # صفحه اصلی
+├── lib/                # دیتابیس، احراز هویت، یوتیلیتی
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## تکنولوژی‌ها
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Frontend**: Next.js 16, React 19, Tailwind CSS, فونت وزیرمتن
+- **Backend**: Next.js API Routes, Prisma ORM
+- **Database**: PostgreSQL
+- **Cities API**: Divar Iran Locations API
