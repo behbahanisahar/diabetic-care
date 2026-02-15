@@ -32,15 +32,18 @@ export default function NewPatientPage() {
         method: "POST",
         body: formData,
       });
-      const patient = await res.json();
+      const data = await res.json();
       if (!res.ok) {
-        toast.error(patient.error || "خطا در ثبت");
+        toast.error(data.error || "خطا در ثبت");
         return;
       }
-      const qrRes = await fetch(`/api/patients/${patient.id}/qr`);
-      const qrData = await qrRes.json();
-      if (qrData.qrCode) {
-        setQrResult({ qrCode: qrData.qrCode, qrUrl: qrData.qrUrl, firstName: patient.firstName, lastName: patient.lastName });
+      if (data.qrCode && data.qrUrl) {
+        setQrResult({
+          qrCode: data.qrCode,
+          qrUrl: data.qrUrl,
+          firstName: data.firstName,
+          lastName: data.lastName,
+        });
       } else {
         router.push("/admin/patients");
       }

@@ -66,17 +66,16 @@ export async function POST(request: NextRequest) {
       const formData = await request.formData();
       body = Object.fromEntries(formData.entries()) as Record<string, unknown>;
 
-      // Handle file uploads
+      // Handle file uploads in parallel (faster when both images are present)
       const nationalIdFile = formData.get("nationalIdPhoto") as File | null;
       const birthCertFile = formData.get("birthCertificatePhoto") as File | null;
 
-      if (nationalIdFile && nationalIdFile.size > 0) {
-        body.nationalIdPhoto = await uploadFile(nationalIdFile, "nid");
-      }
-
-      if (birthCertFile && birthCertFile.size > 0) {
-        body.birthCertificatePhoto = await uploadFile(birthCertFile, "bc");
-      }
+      const [nationalIdUrl, birthCertUrl] = await Promise.all([
+        nationalIdFile?.size ? uploadFile(nationalIdFile, "nid") : Promise.resolve(null),
+        birthCertFile?.size ? uploadFile(birthCertFile, "bc") : Promise.resolve(null),
+      ]);
+      if (nationalIdUrl) body.nationalIdPhoto = nationalIdUrl;
+      if (birthCertUrl) body.birthCertificatePhoto = birthCertUrl;
     } else {
       body = await request.json();
     }
@@ -149,7 +148,22 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(patient);
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const qrUrl = `${baseUrl}/patient/${patient.qrCodeId}`;
+    let qrCode: string | null = null;
+    try {
+      const QRCode = (await import("qrcode")).default;
+      qrCode = await QRCode.toDataURL(qrUrl, {
+        width: 512,
+        margin: 2,
+        color: { dark: "#0f172a", light: "#ffffff" },
+      });
+    } catch {
+      // ignore
+    }
+    return NextResponse.json(
+      qrCode ? { ...patient, qrCode, qrUrl } : patient
+    );
   } catch (error) {
     console.error("Create patient error:", error);
     const message = error instanceof Error ? error.message : "خطا در ثبت بیمار";

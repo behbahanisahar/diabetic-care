@@ -29,6 +29,7 @@ import {
   ComboboxList,
 } from "@/components/ui/combobox";
 import { cn } from "@/lib/utils";
+import { createResizedPreview } from "@/lib/image-preview";
 
 interface City {
   id: number;
@@ -134,10 +135,12 @@ export default function PatientForm({
 
   const handleNationalIdFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (nationalIdPreview) URL.revokeObjectURL(nationalIdPreview);
+    if (nationalIdPreview?.startsWith("blob:")) URL.revokeObjectURL(nationalIdPreview);
     if (file) {
-      setNationalIdPreview(URL.createObjectURL(file));
       setNationalIdFileName(file.name);
+      createResizedPreview(file)
+        .then(setNationalIdPreview)
+        .catch(() => setNationalIdPreview(URL.createObjectURL(file)));
     } else {
       setNationalIdPreview(initialNationalIdPhoto || null);
       setNationalIdFileName(null);
@@ -146,10 +149,12 @@ export default function PatientForm({
 
   const handleBirthCertFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (birthCertPreview && !birthCertPreview.startsWith("/")) URL.revokeObjectURL(birthCertPreview);
+    if (birthCertPreview?.startsWith("blob:")) URL.revokeObjectURL(birthCertPreview);
     if (file) {
-      setBirthCertPreview(URL.createObjectURL(file));
       setBirthCertFileName(file.name);
+      createResizedPreview(file)
+        .then(setBirthCertPreview)
+        .catch(() => setBirthCertPreview(URL.createObjectURL(file)));
     } else {
       setBirthCertPreview(initialBirthCertificatePhoto || null);
       setBirthCertFileName(null);
@@ -158,8 +163,8 @@ export default function PatientForm({
 
   useEffect(() => {
     return () => {
-      if (nationalIdPreview && !nationalIdPreview.startsWith("/")) URL.revokeObjectURL(nationalIdPreview);
-      if (birthCertPreview && !birthCertPreview.startsWith("/")) URL.revokeObjectURL(birthCertPreview);
+      if (nationalIdPreview?.startsWith("blob:")) URL.revokeObjectURL(nationalIdPreview);
+      if (birthCertPreview?.startsWith("blob:")) URL.revokeObjectURL(birthCertPreview);
     };
   }, [nationalIdPreview, birthCertPreview]);
 

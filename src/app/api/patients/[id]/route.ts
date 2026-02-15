@@ -48,13 +48,12 @@ export async function PUT(
       const nationalIdFile = formData.get("nationalIdPhoto") as File | null;
       const birthCertFile = formData.get("birthCertificatePhoto") as File | null;
 
-      if (nationalIdFile && nationalIdFile.size > 0) {
-        body.nationalIdPhoto = await uploadFile(nationalIdFile, "nid");
-      }
-
-      if (birthCertFile && birthCertFile.size > 0) {
-        body.birthCertificatePhoto = await uploadFile(birthCertFile, "bc");
-      }
+      const [nationalIdUrl, birthCertUrl] = await Promise.all([
+        nationalIdFile?.size ? uploadFile(nationalIdFile, "nid") : Promise.resolve(null),
+        birthCertFile?.size ? uploadFile(birthCertFile, "bc") : Promise.resolve(null),
+      ]);
+      if (nationalIdUrl) body.nationalIdPhoto = nationalIdUrl;
+      if (birthCertUrl) body.birthCertificatePhoto = birthCertUrl;
     } else {
       body = await request.json();
     }

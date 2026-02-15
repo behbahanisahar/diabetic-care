@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { toPersianDigits, normalizeToAsciiDigits } from "@/lib/utils";
 import { ArrowRight } from "lucide-react";
@@ -144,12 +145,15 @@ export default async function PublicPatientPage({ params }: Props) {
               {patient.nationalIdPhoto && (
                 <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
                   <p className="mb-3 text-sm font-medium text-slate-600">کارت ملی</p>
-                  <div className="flex min-h-[180px] items-center justify-center overflow-hidden rounded-lg bg-white">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                  <div className="relative flex min-h-[180px] items-center justify-center overflow-hidden rounded-lg bg-white">
+                    <Image
                       src={patient.nationalIdPhoto}
                       alt="کارت ملی"
+                      width={360}
+                      height={256}
                       className="max-h-64 w-full object-contain"
+                      sizes="(max-width: 640px) 100vw, 50vw"
+                      loading="lazy"
                     />
                   </div>
                 </div>
@@ -157,12 +161,15 @@ export default async function PublicPatientPage({ params }: Props) {
               {patient.birthCertificatePhoto && (
                 <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
                   <p className="mb-3 text-sm font-medium text-slate-600">شناسنامه</p>
-                  <div className="flex min-h-[180px] items-center justify-center overflow-hidden rounded-lg bg-white">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                  <div className="relative flex min-h-[180px] items-center justify-center overflow-hidden rounded-lg bg-white">
+                    <Image
                       src={patient.birthCertificatePhoto}
                       alt="شناسنامه"
+                      width={360}
+                      height={256}
                       className="max-h-64 w-full object-contain"
+                      sizes="(max-width: 640px) 100vw, 50vw"
+                      loading="lazy"
                     />
                   </div>
                 </div>
