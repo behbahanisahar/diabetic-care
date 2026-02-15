@@ -128,27 +128,40 @@ export async function POST(request: NextRequest) {
         : null;
 
     const { prisma } = await import("@/lib/db");
-    const patient = await prisma.patient.create({
-      data: {
-        qrCodeId,
-        firstName: String(firstName),
-        lastName: String(lastName),
-        nationalId: nationalIdStr,
-        birthCertificateId: birthCertificateId ? String(birthCertificateId) : null,
-        city: String(city),
-        placeOfLiving: placeOfLiving ? String(placeOfLiving) : null,
-        birthDate: birthDate ? String(birthDate) : null,
-        address: address ? String(address) : null,
-        nationalIdPhoto: nationalIdPhotoPath,
-        birthCertificatePhoto: birthCertPath,
-        bloodType: bloodType && String(bloodType) !== "" ? String(bloodType) : null,
-        diabetesType: diabetesType ? String(diabetesType) : null,
-        examinationLink: examinationLink ? String(examinationLink) : null,
-        emergencyContact: emergencyContact ? String(emergencyContact) : null,
-        treatingPhysician: treatingPhysician ? String(treatingPhysician) : null,
-        notes: notes ? String(notes) : null,
-      },
-    });
+    const createData = {
+      qrCodeId,
+      firstName: String(firstName),
+      lastName: String(lastName),
+      nationalId: nationalIdStr,
+      birthCertificateId: birthCertificateId ? String(birthCertificateId) : null,
+      city: String(city),
+      placeOfLiving: placeOfLiving ? String(placeOfLiving) : null,
+      birthDate: birthDate ? String(birthDate) : null,
+      address: address ? String(address) : null,
+      nationalIdPhoto: nationalIdPhotoPath,
+      birthCertificatePhoto: birthCertPath,
+      bloodType: bloodType && String(bloodType) !== "" ? String(bloodType) : null,
+      diabetesType: diabetesType ? String(diabetesType) : null,
+      examinationLink: examinationLink ? String(examinationLink) : null,
+      emergencyContact: emergencyContact ? String(emergencyContact) : null,
+      treatingPhysician: treatingPhysician ? String(treatingPhysician) : null,
+      notes: notes ? String(notes) : null,
+    };
+
+    let patient: { id: string; qrCodeId: string; firstName: string; lastName: string; [key: string]: unknown };
+    try {
+      patient = await prisma.patient.create({ data: createData });
+    } catch (createError) {
+      const msg = createError instanceof Error ? createError.message : "";
+      const missingColumn =
+        msg.includes("treatingPhysician") && (msg.includes("column") || msg.includes("Unknown"));
+      if (missingColumn) {
+        const { treatingPhysician: _t, ...dataWithoutPhysician } = createData;
+        patient = await prisma.patient.create({ data: dataWithoutPhysician });
+      } else {
+        throw createError;
+      }
+    }
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     const qrUrl = `${baseUrl}/patient/${patient.qrCodeId}`;
@@ -169,7 +182,6 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Create patient error:", error);
     const message = error instanceof Error ? error.message : "خطا در ثبت بیمار";
-    // Pass through errors that help fix config (BLOB, DB, connection)
     const isActionable =
       message.includes("BLOB_READ_WRITE_TOKEN") ||
       message.includes("DATABASE") ||

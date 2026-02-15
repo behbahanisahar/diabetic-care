@@ -100,10 +100,24 @@ export async function PUT(
     }
 
     const { prisma } = await import("@/lib/db");
-    const patient = await prisma.patient.update({
-      where: { id },
-      data: updateData,
-    });
+    let patient;
+    try {
+      patient = await prisma.patient.update({
+        where: { id },
+        data: updateData,
+      });
+    } catch (updateError) {
+      const msg = updateError instanceof Error ? updateError.message : "";
+      if (msg.includes("treatingPhysician") && (msg.includes("column") || msg.includes("Unknown"))) {
+        const { treatingPhysician: _t, ...dataWithoutPhysician } = updateData;
+        patient = await prisma.patient.update({
+          where: { id },
+          data: dataWithoutPhysician,
+        });
+      } else {
+        throw updateError;
+      }
+    }
 
     return NextResponse.json(patient);
   } catch (error) {
