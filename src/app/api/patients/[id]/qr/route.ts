@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { isAdminAuthenticated } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
-import { isAdminAuthenticated } from "@/lib/auth";
-import QRCode from "qrcode";
 
 export async function GET(
   request: NextRequest,
@@ -25,6 +24,7 @@ export async function GET(
   const qrUrl = `${baseUrl}/patient/${patient.qrCodeId}`;
 
   try {
+    const QRCode = (await import("qrcode")).default;
     const qrDataUrl = await QRCode.toDataURL(qrUrl, {
       width: 512,
       margin: 2,
