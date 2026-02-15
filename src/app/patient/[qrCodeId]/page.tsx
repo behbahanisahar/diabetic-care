@@ -78,7 +78,7 @@ export default async function PublicPatientPage({ params }: Props) {
         </div>
         {/* Header */}
         <p className="mb-6 text-center text-xs font-medium tracking-wide text-slate-500">
-          سامانه مراقبت دیابتی ایران
+          سامانه جامع اطلاعات بیماران دیابتی
         </p>
 
         {/* Patient name */}
@@ -133,6 +133,9 @@ export default async function PublicPatientPage({ params }: Props) {
             )}
             {patient.address && (
               <InfoItem label="آدرس" value={patient.address} />
+            )}
+            {patient.treatingPhysician && (
+              <InfoItem label="پزشک معالج" value={patient.treatingPhysician} />
             )}
           </dl>
         </div>

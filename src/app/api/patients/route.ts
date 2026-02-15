@@ -95,6 +95,7 @@ export async function POST(request: NextRequest) {
       diabetesType,
       examinationLink,
       emergencyContact,
+      treatingPhysician,
       notes,
     } = body;
 
@@ -144,6 +145,7 @@ export async function POST(request: NextRequest) {
         diabetesType: diabetesType ? String(diabetesType) : null,
         examinationLink: examinationLink ? String(examinationLink) : null,
         emergencyContact: emergencyContact ? String(emergencyContact) : null,
+        treatingPhysician: treatingPhysician ? String(treatingPhysician) : null,
         notes: notes ? String(notes) : null,
       },
     });

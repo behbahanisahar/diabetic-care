@@ -41,6 +41,7 @@ interface Patient {
   diabetesType: string | null;
   examinationLink: string | null;
   emergencyContact: string | null;
+  treatingPhysician: string | null;
   notes: string | null;
 }
 
@@ -189,6 +190,7 @@ export default function EditPatientPage() {
           diabetesType: patient.diabetesType || "none",
           examinationLink: patient.examinationLink || "",
           emergencyContact: patient.emergencyContact || "",
+          treatingPhysician: patient.treatingPhysician || "",
           notes: patient.notes || "",
         }}
         initialNationalIdPhoto={patient.nationalIdPhoto || undefined}

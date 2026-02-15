@@ -11,7 +11,7 @@ export async function SiteHeader() {
         <Link href="/" className="flex items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.svg" alt="" className="size-8 shrink-0" aria-hidden />
-          <span className="text-sm font-semibold text-slate-900">مراقبت دیابتی</span>
+          <span className="text-sm font-semibold text-slate-900">اطلاعات بیماران دیابتی</span>
         </Link>
         <nav className="flex items-center gap-4">
           <HeaderAuth authenticated={authenticated} />

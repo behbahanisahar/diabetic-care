@@ -50,7 +50,7 @@ export default function AdminLoginPage() {
               </svg>
             </div>
             <h1 className="text-2xl font-bold text-slate-900">ورود به پنل</h1>
-            <p className="mt-1 text-sm text-muted-foreground">سامانه مراقبت دیابتی</p>
+            <p className="mt-1 text-sm text-muted-foreground">سامانه جامع اطلاعات بیماران دیابتی</p>
           </div>
           <form onSubmit={handleSubmit} className="space-y-5" noValidate>
             <div className="space-y-2">

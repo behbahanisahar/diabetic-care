@@ -58,6 +58,7 @@ interface PatientFormProps {
     diabetesType: string;
     examinationLink: string;
     emergencyContact: string;
+    treatingPhysician: string;
     notes: string;
   }>;
   initialNationalIdPhoto?: string;
@@ -333,6 +334,17 @@ export default function PatientForm({
               name="emergencyContact"
               defaultValue={initialData?.emergencyContact}
               placeholder="شماره تماس"
+              className={formInputStyle}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="treatingPhysician">پزشک معالج</Label>
+            <Input
+              id="treatingPhysician"
+              name="treatingPhysician"
+              defaultValue={initialData?.treatingPhysician}
+              placeholder="نام پزشک معالج"
               className={formInputStyle}
             />
           </div>

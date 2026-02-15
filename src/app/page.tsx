@@ -22,7 +22,7 @@ export default function Home() {
         <div className="relative z-10 flex w-full max-w-6xl flex-col items-center gap-8 sm:flex-row sm:gap-10 sm:text-start">
           <div className="min-w-0 flex-1 space-y-4 text-start">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-600 sm:text-sm">
-              سامانه مراقبت دیابتی ایران
+              سامانه جامع اطلاعات بیماران دیابتی
             </p>
             <h1 className="text-3xl font-bold leading-tight tracking-tight text-slate-900 sm:text-4xl lg:text-[2.75rem]">
               مدیریت بیماران
@@ -59,7 +59,7 @@ export default function Home() {
       <section className="border-t border-slate-200/80 bg-white py-20 sm:py-24">
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">چرا این سامانه؟</h2>
+            <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">چرا سامانه جامع اطلاعات بیماران دیابتی؟</h2>
             <p className="mt-3 text-slate-700">ابزار ساده و حرفه‌ای برای مراکز درمانی</p>
           </div>
           <div className="mt-16 grid gap-6 sm:grid-cols-3 sm:gap-8">

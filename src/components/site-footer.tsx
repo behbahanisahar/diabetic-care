@@ -8,7 +8,7 @@ export function SiteFooter() {
           <Link href="/" className="flex items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.svg" alt="" className="size-6 shrink-0" aria-hidden />
-            <span className="text-sm font-medium text-slate-700">سامانه مراقبت دیابتی ایران</span>
+            <span className="text-sm font-medium text-slate-700">سامانه جامع اطلاعات بیماران دیابتی</span>
           </Link>
           <p className="text-xs text-slate-500">
             مدیریت بیماران با QR کد یکتا

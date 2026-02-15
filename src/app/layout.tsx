@@ -12,8 +12,8 @@ const vazirmatn = Vazirmatn({
 });
 
 export const metadata: Metadata = {
-  title: "سامانه مراقبت دیابتی | Diabetic Care",
-  description: "سامانه ثبت و مدیریت اطلاعات بیماران دیابتی ایران",
+  title: "سامانه جامع اطلاعات بیماران دیابتی",
+  description: "سامانه جامع ثبت و مدیریت اطلاعات بیماران دیابتی",
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
 };
 

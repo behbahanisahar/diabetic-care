@@ -24,6 +24,7 @@ model Patient {
   diabetesType          String?  // "type1" | "type2" | "none"
   examinationLink       String?
   emergencyContact      String?
+  treatingPhysician     String?  // پزشک معالج
   notes                 String?
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
