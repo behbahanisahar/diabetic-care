@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { SearchIcon, Pencil, Download, ExternalLink, Trash2 } from "lucide-react";
+import { SearchIcon, Pencil, Download, ExternalLink, Trash2, ChevronRight, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -30,9 +30,14 @@ interface Patient {
   createdAt: string;
 }
 
+const PAGE_SIZE = 10;
+
 export default function PatientsListPage() {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
   const [patientToDelete, setPatientToDelete] = useState<Patient | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -40,15 +45,29 @@ export default function PatientsListPage() {
   useEffect(() => {
     const q = new URLSearchParams();
     if (search) q.set("search", search);
+    q.set("page", String(page));
+    q.set("limit", String(PAGE_SIZE));
+    setLoading(true);
     fetch(`/api/patients?${q}`)
       .then((r) => r.json())
       .then((data) => {
-        if (Array.isArray(data)) setPatients(data);
-        else setPatients([]);
+        if (data?.patients && Array.isArray(data.patients)) {
+          setPatients(data.patients);
+          setTotal(data.total ?? 0);
+          setTotalPages(data.totalPages ?? 1);
+        } else {
+          setPatients([]);
+          setTotal(0);
+          setTotalPages(0);
+        }
       })
-      .catch(() => setPatients([]))
+      .catch(() => {
+        setPatients([]);
+        setTotal(0);
+        setTotalPages(0);
+      })
       .finally(() => setLoading(false));
-  }, [search]);
+  }, [search, page]);
 
   const handleDownloadQR = async (p: Patient) => {
     const res = await fetch(`/api/patients/${p.id}/qr`);
@@ -73,7 +92,9 @@ export default function PatientsListPage() {
       }
       toast.success("بیمار با موفقیت حذف شد");
       setPatients((prev) => prev.filter((x) => x.id !== patientToDelete.id));
+      setTotal((t) => Math.max(0, t - 1));
       setPatientToDelete(null);
+      if (patients.length <= 1 && page > 1) setPage((p) => p - 1);
     } finally {
       setDeleting(false);
     }
@@ -92,7 +113,10 @@ export default function PatientsListPage() {
           <Input
             placeholder="جستجو نام، کد ملی، شهر..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
             className="h-11 rounded-xl border-slate-200 bg-white ps-10"
           />
         </div>
@@ -170,21 +194,27 @@ export default function PatientsListPage() {
                     </Tooltip>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button variant="outline" size="icon" className="h-9 w-9 shrink-0 rounded-lg" onClick={() => handleDownloadQR(p)}>
-                          <Download className="size-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top">دانلود QR</TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="outline" size="icon" className="h-9 w-9 shrink-0 rounded-lg" asChild>
-                          <Link href={`/patient/${p.qrCodeId}`} target="_blank" rel="noopener noreferrer">
-                            <ExternalLink className="size-4" />
+                        <div className="flex h-9 shrink-0 items-center overflow-hidden rounded-lg border border-input bg-background">
+                          <Link
+                            href={`/patient/${p.qrCodeId}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex h-full items-center gap-1.5 px-3 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+                          >
+                            <ExternalLink className="size-3.5" />
+                            مشاهده
                           </Link>
-                        </Button>
+                          <button
+                            type="button"
+                            onClick={() => handleDownloadQR(p)}
+                            className="flex h-full items-center justify-center border-s border-input px-2 hover:bg-accent hover:text-accent-foreground"
+                            title="دانلود QR"
+                          >
+                            <Download className="size-3.5" />
+                          </button>
+                        </div>
                       </TooltipTrigger>
-                      <TooltipContent side="top">مشاهده صفحه بیمار</TooltipContent>
+                      <TooltipContent side="top">مشاهده صفحه بیمار / دانلود QR</TooltipContent>
                     </Tooltip>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -203,6 +233,39 @@ export default function PatientsListPage() {
                 </TooltipProvider>
               </div>
             ))}
+          </div>
+        )}
+        {!loading && total > 0 && (
+          <div className="flex flex-col items-center justify-between gap-3 border-t border-slate-100 px-4 py-3 sm:flex-row sm:px-6">
+            <p className="text-sm text-slate-500">
+              نمایش {toPersianDigits(String((page - 1) * PAGE_SIZE + 1))}–
+              {toPersianDigits(String(Math.min(page * PAGE_SIZE, total)))} از {toPersianDigits(String(total))}
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 rounded-lg"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+              >
+                <ChevronRight className="size-4" />
+                قبلی
+              </Button>
+              <span className="min-w-24 text-center text-sm text-slate-600">
+                صفحه {toPersianDigits(String(page))} از {toPersianDigits(String(totalPages))}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 rounded-lg"
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              >
+                بعدی
+                <ChevronLeft className="size-4" />
+              </Button>
+            </div>
           </div>
         )}
       </div>

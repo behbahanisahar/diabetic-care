@@ -14,25 +14,41 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const search = searchParams.get("search") || "";
   const nationalIdSearch = normalizeSearchForNationalId(search);
+  const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+  const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "10", 10)));
+
+  const where = search
+    ? {
+        OR: [
+          { firstName: { contains: search } },
+          { lastName: { contains: search } },
+          ...(nationalIdSearch ? [{ nationalId: { contains: nationalIdSearch } }] : []),
+          { birthCertificateId: { contains: search } },
+          { city: { contains: search } },
+          { qrCodeId: { contains: search } },
+        ],
+      }
+    : undefined;
 
   const { prisma } = await import("@/lib/db");
-  const patients = await prisma.patient.findMany({
-    where: search
-      ? {
-          OR: [
-            { firstName: { contains: search } },
-            { lastName: { contains: search } },
-            ...(nationalIdSearch ? [{ nationalId: { contains: nationalIdSearch } }] : []),
-            { birthCertificateId: { contains: search } },
-            { city: { contains: search } },
-            { qrCodeId: { contains: search } },
-          ],
-        }
-      : undefined,
-    orderBy: { createdAt: "desc" },
-  });
+  const [total, patients] = await Promise.all([
+    prisma.patient.count({ where }),
+    prisma.patient.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * limit,
+      take: limit,
+    }),
+  ]);
 
-  return NextResponse.json(patients);
+  const totalPages = Math.ceil(total / limit) || 1;
+  return NextResponse.json({
+    patients,
+    total,
+    page,
+    limit,
+    totalPages,
+  });
 }
 
 export async function POST(request: NextRequest) {

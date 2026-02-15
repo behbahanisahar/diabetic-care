@@ -47,7 +47,7 @@ export default function Home() {
             {/* Animated QR (hero.svg – scan line animation) */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/hero.svg"
+              src="/hero.svg?v=2"
               alt="QR کد یکتا"
               className="h-72 w-72 object-cover object-[50%_35%] sm:h-96 sm:w-96 lg:h-[26rem] lg:w-[26rem]"
             />
