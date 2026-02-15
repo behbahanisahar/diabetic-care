@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 // Public API - no auth required. Returns patient data for QR code scanners
 export async function GET(
   request: NextRequest,

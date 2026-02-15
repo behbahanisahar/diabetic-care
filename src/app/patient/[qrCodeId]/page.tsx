@@ -4,6 +4,8 @@ import type { Metadata } from "next";
 import { Button } from "@/components/ui/button";
 import { toPersianDigits, normalizeToAsciiDigits } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 interface Props {
   params: Promise<{ qrCodeId: string }>;
 }

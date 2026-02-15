@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isAdminAuthenticated } from "@/lib/auth";
+
+export const dynamic = "force-dynamic";
 import { generateQrCodeId, normalizeIranianNationalId, normalizeSearchForNationalId } from "@/lib/utils";
 import { uploadFile } from "@/lib/upload";
 
