@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
@@ -7,11 +8,8 @@ function createPrismaClient() {
   if (!url) {
     throw new Error("DATABASE_URL environment variable is not set");
   }
-  return new PrismaClient({
-    datasources: {
-      db: { url },
-    },
-  });
+  const adapter = new PrismaPg({ connectionString: url });
+  return new PrismaClient({ adapter });
 }
 
 export const prisma =
