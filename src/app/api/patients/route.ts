@@ -137,8 +137,14 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Create patient error:", error);
     const message = error instanceof Error ? error.message : "خطا در ثبت بیمار";
-    // Pass through user-actionable errors (e.g. BLOB_READ_WRITE_TOKEN) even in production
-    const isActionable = message.includes("BLOB_READ_WRITE_TOKEN") || message.includes("DATABASE");
+    // Pass through errors that help fix config (BLOB, DB, connection)
+    const isActionable =
+      message.includes("BLOB_READ_WRITE_TOKEN") ||
+      message.includes("DATABASE") ||
+      message.includes("connect") ||
+      message.includes("ECONNREFUSED") ||
+      message.includes("P1001") ||
+      message.includes("Can't reach");
     const errorToReturn =
       process.env.NODE_ENV === "development" || isActionable ? message : "خطا در ثبت بیمار";
     return NextResponse.json({ error: errorToReturn }, { status: 500 });
