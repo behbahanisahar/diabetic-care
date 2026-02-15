@@ -1,21 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
-import { isAdminAuthenticated } from "@/lib/auth";
-
-export const dynamic = "force-dynamic";
 import { normalizeIranianNationalId } from "@/lib/utils";
 import { uploadFile } from "@/lib/upload";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { isAdminAuthenticated } = await import("@/lib/auth");
   const authenticated = await isAdminAuthenticated();
   if (!authenticated) {
     return NextResponse.json({ error: "دسترسی غیرمجاز" }, { status: 401 });
   }
 
   const { id } = await params;
+  const { prisma } = await import("@/lib/db");
   const patient = await prisma.patient.findUnique({ where: { id } });
 
   if (!patient) {
@@ -29,6 +29,7 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { isAdminAuthenticated } = await import("@/lib/auth");
   const authenticated = await isAdminAuthenticated();
   if (!authenticated) {
     return NextResponse.json({ error: "دسترسی غیرمجاز" }, { status: 401 });
@@ -99,6 +100,7 @@ export async function PUT(
       updateData.birthCertificatePhoto = body.birthCertificatePhoto === "" ? null : body.birthCertificatePhoto;
     }
 
+    const { prisma } = await import("@/lib/db");
     const patient = await prisma.patient.update({
       where: { id },
       data: updateData,
@@ -118,12 +120,14 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { isAdminAuthenticated } = await import("@/lib/auth");
   const authenticated = await isAdminAuthenticated();
   if (!authenticated) {
     return NextResponse.json({ error: "دسترسی غیرمجاز" }, { status: 401 });
   }
 
   const { id } = await params;
+  const { prisma } = await import("@/lib/db");
   const patient = await prisma.patient.findUnique({ where: { id } });
 
   if (!patient) {
