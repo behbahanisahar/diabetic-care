@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/db";
 import type { Metadata } from "next";
 import { Button } from "@/components/ui/button";
 import { toPersianDigits, normalizeToAsciiDigits } from "@/lib/utils";
@@ -12,6 +11,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { qrCodeId } = await params;
+  const { prisma } = await import("@/lib/db");
   const patient = await prisma.patient.findUnique({
     where: { qrCodeId },
   });
@@ -29,6 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function PublicPatientPage({ params }: Props) {
   const { qrCodeId } = await params;
 
+  const { prisma } = await import("@/lib/db");
   const patient = await prisma.patient.findUnique({
     where: { qrCodeId },
   });

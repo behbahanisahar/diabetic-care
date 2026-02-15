@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
-import { isAdminAuthenticated } from "@/lib/auth";
-
-export const dynamic = "force-dynamic";
 import { generateQrCodeId, normalizeIranianNationalId, normalizeSearchForNationalId } from "@/lib/utils";
 import { uploadFile } from "@/lib/upload";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
+  const { isAdminAuthenticated } = await import("@/lib/auth");
   const authenticated = await isAdminAuthenticated();
   if (!authenticated) {
     return NextResponse.json({ error: "دسترسی غیرمجاز" }, { status: 401 });
@@ -16,6 +15,7 @@ export async function GET(request: NextRequest) {
   const search = searchParams.get("search") || "";
   const nationalIdSearch = normalizeSearchForNationalId(search);
 
+  const { prisma } = await import("@/lib/db");
   const patients = await prisma.patient.findMany({
     where: search
       ? {
@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const { isAdminAuthenticated } = await import("@/lib/auth");
   const authenticated = await isAdminAuthenticated();
   if (!authenticated) {
     return NextResponse.json({ error: "دسترسی غیرمجاز" }, { status: 401 });
@@ -110,6 +111,7 @@ export async function POST(request: NextRequest) {
         ? birthCertificatePhoto
         : null;
 
+    const { prisma } = await import("@/lib/db");
     const patient = await prisma.patient.create({
       data: {
         qrCodeId,

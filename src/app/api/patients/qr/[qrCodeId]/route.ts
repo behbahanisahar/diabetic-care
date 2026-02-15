@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +9,7 @@ export async function GET(
 ) {
   const { qrCodeId } = await params;
 
+  const { prisma } = await import("@/lib/db");
   const patient = await prisma.patient.findUnique({
     where: { qrCodeId },
   });
