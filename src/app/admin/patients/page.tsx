@@ -271,7 +271,7 @@ export default function PatientsListPage() {
                         </div>
                       </td>
                       <td className="relative z-10 py-3 pe-4 ps-4" onClick={(e) => e.stopPropagation()}>
-                        <div className={cn("relative inline-block", openMenuId === p.id && "z-[100]")} ref={openMenuId === p.id ? menuRef : undefined}>
+                        <div className={cn("relative inline-block", openMenuId === p.id && "z-[9999]")} ref={openMenuId === p.id ? menuRef : undefined}>
                           <Button
                             variant="outline"
                             size="icon"
@@ -288,7 +288,7 @@ export default function PatientsListPage() {
                           {openMenuId === p.id && (
                             <div
                               className={cn(
-                                "absolute left-0 z-[100] min-w-[180px] rounded-xl border border-slate-200 bg-white py-1 shadow-lg",
+                                "absolute left-0 z-[9999] min-w-[180px] rounded-xl border border-slate-200 bg-white py-1 shadow-lg",
                                 menuOpensUpward ? "bottom-full mb-1" : "top-full mt-1"
                               )}
                               dir="rtl"
@@ -373,7 +373,7 @@ export default function PatientsListPage() {
                     {openMenuId === p.id && (
                       <div
                         className={cn(
-                          "absolute left-0 z-[100] min-w-[180px] rounded-xl border border-slate-200 bg-white py-1 shadow-lg",
+                          "absolute left-0 z-[9999] min-w-[180px] rounded-xl border border-slate-200 bg-white py-1 shadow-lg",
                           menuOpensUpward ? "bottom-full mb-1" : "top-full mt-1"
                         )}
                         dir="rtl"
@@ -403,7 +403,7 @@ export default function PatientsListPage() {
           </>
         )}
         {!loading && total > 0 && (
-          <div className="flex flex-col items-center justify-between gap-3 border-t border-slate-100 px-4 py-3 sm:flex-row sm:px-6">
+          <div className="relative z-0 flex flex-col items-center justify-between gap-3 border-t border-slate-100 px-4 py-3 sm:flex-row sm:px-6">
             <p className="text-sm text-slate-500">
               نمایش {toPersianDigits(String((page - 1) * PAGE_SIZE + 1))}–
               {toPersianDigits(String(Math.min(page * PAGE_SIZE, total)))} از {toPersianDigits(String(total))}
