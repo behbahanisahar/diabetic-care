@@ -30,7 +30,6 @@ export async function GET(
     address: patient.address,
     bloodType: patient.bloodType,
     diabetesType: patient.diabetesType,
-    examinationLink: patient.examinationLink,
     emergencyContact: patient.emergencyContact,
     nationalIdPhoto: patient.nationalIdPhoto,
     birthCertificatePhoto: patient.birthCertificatePhoto,

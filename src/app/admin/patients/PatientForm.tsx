@@ -58,7 +58,6 @@ interface PatientFormProps {
     diabetesType: string;
     weightKg: string;
     heightCm: string;
-    examinationLink: string;
     emergencyContact: string;
     emergencyContact2: string;
     treatingPhysician: string;
@@ -363,18 +362,6 @@ export default function PatientForm({
                 className={formInputStyle}
               />
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="examinationLink">لینک معاینه / آزمایش</Label>
-            <Input
-              id="examinationLink"
-              name="examinationLink"
-              type="url"
-              defaultValue={initialData?.examinationLink}
-              placeholder="https://..."
-              className={formInputStyle}
-            />
           </div>
 
           <div className="space-y-2">

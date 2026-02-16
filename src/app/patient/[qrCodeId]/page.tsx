@@ -267,21 +267,6 @@ export default async function PublicPatientPage({ params }: Props) {
           </div>
         )}
 
-        {/* Examination link */}
-        {patient.examinationLink && (
-          <div className="mb-8">
-            <Button className="w-full rounded-xl py-6 text-base font-medium" size="lg" asChild>
-              <a
-                href={patient.examinationLink}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                لینک معاینه / آزمایش
-              </a>
-            </Button>
-          </div>
-        )}
-
         {/* Notes */}
         {patient.notes && (
           <div className="mb-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

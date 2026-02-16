@@ -102,7 +102,7 @@ export async function PUT(
     const updateData: Record<string, unknown> = {};
     const scalarFields = [
       "firstName", "lastName", "nationalId", "birthCertificateId", "city", "placeOfLiving",
-      "birthDate", "address", "bloodType", "diabetesType", "examinationLink", "emergencyContact", "emergencyContact2", "treatingPhysician", "notes"
+      "birthDate", "address", "bloodType", "diabetesType", "emergencyContact", "emergencyContact2", "treatingPhysician", "notes"
     ];
 
     for (const field of scalarFields) {

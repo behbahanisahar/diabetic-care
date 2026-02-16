@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { SearchIcon, Pencil, Download, ExternalLink, Trash2, ChevronRight, ChevronLeft, QrCode, ArrowRight, MoreVertical, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -49,6 +50,7 @@ export default function PatientsListPage() {
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const q = new URLSearchParams();
@@ -219,7 +221,19 @@ export default function PatientsListPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {patients.map((p) => (
-                    <tr key={p.id} className="transition-colors hover:bg-slate-50/50">
+                    <tr
+                      key={p.id}
+                      role="button"
+                      tabIndex={0}
+                      className="cursor-pointer transition-colors hover:bg-slate-50/50"
+                      onClick={() => router.push(`/admin/patients/${p.id}`)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          router.push(`/admin/patients/${p.id}`);
+                        }
+                      }}
+                    >
                       <td className="py-3 pe-4 ps-4">
                         <span className="font-semibold text-slate-900">{p.firstName} {p.lastName}</span>
                       </td>
@@ -239,7 +253,7 @@ export default function PatientsListPage() {
                           )}
                         </div>
                       </td>
-                      <td className="py-3 pe-4 ps-4">
+                      <td className="py-3 pe-4 ps-4" onClick={(e) => e.stopPropagation()}>
                         <div className="relative inline-block" ref={openMenuId === p.id ? menuRef : undefined}>
                           <Button
                             variant="outline"
@@ -262,7 +276,7 @@ export default function PatientsListPage() {
                               <button type="button" className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={() => { setQrModalPatient(p); setOpenMenuId(null); }}>
                                 <QrCode className="size-4" /> نمایش QR
                               </button>
-                              <Link href={`/patient/${p.qrCodeId}`} target="_blank" rel="noopener noreferrer" className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={() => setOpenMenuId(null)}>
+                              <Link href={`/patient/${p.qrCodeId}`} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); }}>
                                 <ExternalLink className="size-4" /> مشاهده صفحه
                               </Link>
                               <button type="button" className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={() => { handleDownloadQR(p); setOpenMenuId(null); }}>
@@ -287,7 +301,16 @@ export default function PatientsListPage() {
               {patients.map((p) => (
                 <div
                   key={p.id}
-                  className="flex items-center gap-3 p-3 transition-colors hover:bg-slate-50/50 sm:gap-4 sm:p-4"
+                  role="button"
+                  tabIndex={0}
+                  className="flex cursor-pointer items-center gap-3 p-3 transition-colors hover:bg-slate-50/50 sm:gap-4 sm:p-4"
+                  onClick={() => router.push(`/admin/patients/${p.id}`)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      router.push(`/admin/patients/${p.id}`);
+                    }
+                  }}
                 >
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-xs font-semibold text-primary sm:size-11 sm:rounded-xl">
                     {p.firstName[0]} {p.lastName[0]}
@@ -310,7 +333,7 @@ export default function PatientsListPage() {
                       )}
                     </div>
                   </div>
-                  <div className="relative shrink-0" ref={openMenuId === p.id ? menuRef : undefined}>
+                  <div className="relative shrink-0" ref={openMenuId === p.id ? menuRef : undefined} onClick={(e) => e.stopPropagation()}>
                     <Button
                       variant="outline"
                       size="icon"
@@ -332,7 +355,7 @@ export default function PatientsListPage() {
                         <button type="button" className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={() => { setQrModalPatient(p); setOpenMenuId(null); }}>
                           <QrCode className="size-4" /> نمایش QR
                         </button>
-                        <Link href={`/patient/${p.qrCodeId}`} target="_blank" rel="noopener noreferrer" className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={() => setOpenMenuId(null)}>
+                        <Link href={`/patient/${p.qrCodeId}`} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); }}>
                           <ExternalLink className="size-4" /> مشاهده صفحه
                         </Link>
                         <button type="button" className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={() => { handleDownloadQR(p); setOpenMenuId(null); }}>

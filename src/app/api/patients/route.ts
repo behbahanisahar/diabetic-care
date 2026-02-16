@@ -110,7 +110,6 @@ export async function POST(request: NextRequest) {
       diabetesType,
       weightKg,
       heightCm,
-      examinationLink,
       emergencyContact,
       emergencyContact2,
       educationalFiles,
@@ -164,7 +163,6 @@ export async function POST(request: NextRequest) {
       diabetesType: diabetesType ? String(diabetesType) : null,
       weightKg: weightKg != null && weightKg !== "" ? Number(weightKg) : null,
       heightCm: heightCm != null && heightCm !== "" ? Number(heightCm) : null,
-      examinationLink: examinationLink ? String(examinationLink) : null,
       emergencyContact: emergencyContact ? String(emergencyContact) : null,
       emergencyContact2: emergencyContact2 ? String(emergencyContact2) : null,
       educationalFiles:
