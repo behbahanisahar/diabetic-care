@@ -7,6 +7,12 @@ const UPLOAD_JPEG_QUALITY = 0.85;
 /** Don't resize if under this size (bytes). */
 const UPLOAD_MIN_SIZE = 200 * 1024;
 
+/** Smaller max dimension for educational/examination files = faster upload. */
+const UPLOAD_MAX_WIDTH_EXTRA = 1200;
+const UPLOAD_JPEG_QUALITY_EXTRA = 0.8;
+/** Resize extra files above this size. */
+const UPLOAD_MIN_SIZE_EXTRA = 80 * 1024;
+
 /**
  * Resize image for upload: smaller payload = faster submit. Returns original file if not image or small.
  */
@@ -65,10 +71,58 @@ export function resizeImageForUpload(file: File): Promise<File> {
   });
 }
 
-/** Resize a file for upload if it's a large image; otherwise return as-is. */
-function resizeFileForUpload(file: File): Promise<File> {
-  if (!file.type.startsWith("image/") || file.size < UPLOAD_MIN_SIZE) return Promise.resolve(file);
-  return resizeImageForUpload(file);
+/** Resize educational/examination image to smaller size for faster upload. */
+function resizeExtraFileForUpload(file: File): Promise<File> {
+  if (!file.type.startsWith("image/") || file.size < UPLOAD_MIN_SIZE_EXTRA) return Promise.resolve(file);
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const w = img.naturalWidth;
+      const h = img.naturalHeight;
+      const maxSide = Math.max(w, h);
+      if (maxSide <= UPLOAD_MAX_WIDTH_EXTRA) {
+        resolve(file);
+        return;
+      }
+      let width = w;
+      let height = h;
+      if (w >= h) {
+        width = UPLOAD_MAX_WIDTH_EXTRA;
+        height = Math.round((h * UPLOAD_MAX_WIDTH_EXTRA) / w);
+      } else {
+        height = UPLOAD_MAX_WIDTH_EXTRA;
+        width = Math.round((w * UPLOAD_MAX_WIDTH_EXTRA) / h);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        resolve(file);
+        return;
+      }
+      ctx.drawImage(img, 0, 0, width, height);
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            resolve(file);
+            return;
+          }
+          const name = (file.name || "image").replace(/\.[^.]+$/, "") + ".jpg";
+          resolve(new File([blob], name, { type: "image/jpeg" }));
+        },
+        "image/jpeg",
+        UPLOAD_JPEG_QUALITY_EXTRA
+      );
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(file);
+    };
+    img.src = url;
+  });
 }
 
 /**
@@ -87,8 +141,8 @@ export async function prepareFormDataWithResizedImages(formData: FormData): Prom
   ] = await Promise.all([
     nationalIdFile?.size ? resizeImageForUpload(nationalIdFile) : Promise.resolve(null),
     birthCertFile?.size ? resizeImageForUpload(birthCertFile) : Promise.resolve(null),
-    ...educationalList.map(resizeFileForUpload),
-    ...examinationList.map(resizeFileForUpload),
+    ...educationalList.map(resizeExtraFileForUpload),
+    ...examinationList.map(resizeExtraFileForUpload),
   ]);
 
   const out = new FormData();

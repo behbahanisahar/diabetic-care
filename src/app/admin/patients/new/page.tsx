@@ -17,6 +17,7 @@ export default function NewPatientPage() {
   const router = useRouter();
   const [cities, setCities] = useState<City[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingPhase, setLoadingPhase] = useState<"idle" | "resizing" | "sending">("idle");
   const [qrResult, setQrResult] = useState<{ qrCode: string; qrUrl: string; firstName: string; lastName: string } | null>(null);
 
   useEffect(() => {
@@ -28,8 +29,10 @@ export default function NewPatientPage() {
 
   const handleSubmit = async (formData: FormData) => {
     setLoading(true);
+    setLoadingPhase("resizing");
     try {
       const body = await prepareFormDataWithResizedImages(formData);
+      setLoadingPhase("sending");
       const res = await fetch("/api/patients", {
         method: "POST",
         body,
@@ -53,6 +56,7 @@ export default function NewPatientPage() {
       toast.error("خطا در ثبت بیمار");
     } finally {
       setLoading(false);
+      setLoadingPhase("idle");
     }
   };
 
@@ -98,7 +102,12 @@ export default function NewPatientPage() {
   return (
     <div className="mx-auto max-w-2xl px-6 py-8">
       <h1 className="mb-6 text-2xl font-bold text-slate-900">ثبت بیمار جدید</h1>
-      <PatientForm cities={cities} onSubmit={handleSubmit} loading={loading} />
+      <PatientForm
+        cities={cities}
+        onSubmit={handleSubmit}
+        loading={loading}
+        loadingLabel={loadingPhase === "resizing" ? "در حال فشرده‌سازی تصاویر..." : "در حال ارسال..."}
+      />
     </div>
   );
 }

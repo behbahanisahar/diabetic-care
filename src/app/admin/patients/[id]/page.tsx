@@ -67,6 +67,7 @@ export default function EditPatientPage() {
   const [patient, setPatient] = useState<Patient | null>(null);
   const [cities, setCities] = useState<City[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingPhase, setLoadingPhase] = useState<"idle" | "resizing" | "sending">("idle");
   const [initialLoading, setInitialLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -105,8 +106,10 @@ export default function EditPatientPage() {
 
   const handleSubmit = async (formData: FormData) => {
     setLoading(true);
+    setLoadingPhase("resizing");
     try {
       const body = await prepareFormDataWithResizedImages(formData);
+      setLoadingPhase("sending");
       const res = await fetch(`/api/patients/${id}`, {
         method: "PUT",
         body,
@@ -123,6 +126,7 @@ export default function EditPatientPage() {
       toast.error("خطا در بروزرسانی");
     } finally {
       setLoading(false);
+      setLoadingPhase("idle");
     }
   };
 
@@ -189,7 +193,7 @@ export default function EditPatientPage() {
       <PatientForm
         cities={cities}
         submitLabel="ذخیره تغییرات"
-        loadingLabel="در حال ذخیره..."
+        loadingLabel={loadingPhase === "resizing" ? "در حال فشرده‌سازی تصاویر..." : "در حال ارسال..."}
         cancelHref="/admin/patients"
         cancelLabel="انصراف"
         initialData={{

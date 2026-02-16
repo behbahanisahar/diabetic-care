@@ -212,7 +212,7 @@ export default function PatientsListPage() {
                     <th className="py-3 pe-4">کد ملی</th>
                     <th className="py-3 pe-4">شهر</th>
                     <th className="py-3 pe-4">تاریخ ثبت</th>
-                    <th className="py-3 pe-4">نوع / خون</th>
+                    <th className="py-3 pe-4">noe diabet / khun</th>
                     <th className="w-12 py-3 pe-4 ps-4" />
                   </tr>
                 </thead>
@@ -222,7 +222,7 @@ export default function PatientsListPage() {
                       <td className="py-3 pe-4 ps-4">
                         <span className="font-semibold text-slate-900">{p.firstName} {p.lastName}</span>
                       </td>
-                      <td className="py-3 pe-4 font-mono text-sm text-slate-600">{toPersianDigits(p.nationalId)}</td>
+                      <td className="py-3 pe-4 font-mono text-sm tabular-nums text-slate-700">{toPersianDigits(p.nationalId)}</td>
                       <td className="py-3 pe-4 text-sm text-slate-600">{p.city}</td>
                       <td className="py-3 pe-4 text-sm text-slate-500">{formatDate(p.createdAt)}</td>
                       <td className="py-3 pe-4">
