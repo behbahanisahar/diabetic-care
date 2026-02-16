@@ -19,7 +19,7 @@ import {
 import DateObject from "react-date-object";
 import persian from "react-date-object/calendars/persian";
 import persian_fa from "react-date-object/locales/persian_fa";
-import { toPersianDigits } from "@/lib/utils";
+import { cn, toPersianDigits } from "@/lib/utils";
 
 interface Patient {
   id: string;
@@ -253,8 +253,8 @@ export default function PatientsListPage() {
                           )}
                         </div>
                       </td>
-                      <td className="py-3 pe-4 ps-4" onClick={(e) => e.stopPropagation()}>
-                        <div className="relative inline-block" ref={openMenuId === p.id ? menuRef : undefined}>
+                      <td className="relative z-10 py-3 pe-4 ps-4" onClick={(e) => e.stopPropagation()}>
+                        <div className={cn("relative inline-block", openMenuId === p.id && "z-[100]")} ref={openMenuId === p.id ? menuRef : undefined}>
                           <Button
                             variant="outline"
                             size="icon"
@@ -269,7 +269,7 @@ export default function PatientsListPage() {
                             <MoreVertical className="size-4" />
                           </Button>
                           {openMenuId === p.id && (
-                            <div className="absolute left-0 top-full z-20 mt-1 min-w-[180px] rounded-xl border border-slate-200 bg-white py-1 shadow-lg" dir="rtl">
+                            <div className="absolute left-0 top-full z-[100] mt-1 min-w-[180px] rounded-xl border border-slate-200 bg-white py-1 shadow-lg" dir="rtl">
                               <Link href={`/admin/patients/${p.id}`} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={() => setOpenMenuId(null)}>
                                 <Pencil className="size-4" /> ویرایش
                               </Link>
@@ -348,7 +348,7 @@ export default function PatientsListPage() {
                       <MoreVertical className="size-4" />
                     </Button>
                     {openMenuId === p.id && (
-                      <div className="absolute left-0 top-full z-20 mt-1 min-w-[180px] rounded-xl border border-slate-200 bg-white py-1 shadow-lg" dir="rtl">
+                      <div className="absolute left-0 top-full z-[100] mt-1 min-w-[180px] rounded-xl border border-slate-200 bg-white py-1 shadow-lg" dir="rtl">
                         <Link href={`/admin/patients/${p.id}`} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={() => setOpenMenuId(null)}>
                           <Pencil className="size-4" /> ویرایش
                         </Link>
