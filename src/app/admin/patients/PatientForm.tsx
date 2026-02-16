@@ -138,8 +138,20 @@ export default function PatientForm({
     }
     const hiddenBirth = form.elements.namedItem("birthDate") as HTMLInputElement;
     if (birthDateValue && hiddenBirth) {
-      const d = birthDateValue as { format?: (s: string) => string };
-      hiddenBirth.value = d?.format?.("YYYY-MM-DD") ?? (birthDateValue as Date).toISOString().slice(0, 10);
+      const d = birthDateValue as { format?: (s: string) => string; toDate?: () => Date };
+      let dateStr = "";
+      if (typeof d?.format === "function") {
+        dateStr = d.format("YYYY-MM-DD") ?? "";
+      }
+      if (!dateStr && typeof (birthDateValue as Date).toISOString === "function") {
+        dateStr = (birthDateValue as Date).toISOString().slice(0, 10);
+      }
+      if (!dateStr && typeof d?.toDate === "function") {
+        const native = d.toDate();
+        if (native && typeof native.toISOString === "function") dateStr = native.toISOString().slice(0, 10);
+      }
+      if (typeof birthDateValue === "string") dateStr = birthDateValue.slice(0, 10);
+      if (dateStr) hiddenBirth.value = dateStr;
     }
     const rawFormData = new FormData(form);
     const submitData = new FormData();
