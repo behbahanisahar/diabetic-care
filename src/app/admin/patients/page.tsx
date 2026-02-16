@@ -64,11 +64,17 @@ export default function PatientsListPage() {
       if (!menuRef.current) return;
       const rect = menuRef.current.getBoundingClientRect();
       const menuHeight = 260;
+      const menuWidth = 180;
       const spaceBelow = window.innerHeight - rect.bottom;
       const opensUpward = spaceBelow < menuHeight;
+      // Position dropdown to the right of the button (so it opens over the table, not as a left sidebar)
+      const left = rect.right;
+      const top = opensUpward ? rect.top - menuHeight - 4 : rect.bottom + 4;
+      // Keep menu on screen (RTL: table is right of button, so allow overflow right; clamp left so it doesn't go off left edge)
+      const clampedLeft = Math.max(8, Math.min(left, window.innerWidth - menuWidth - 8));
       setMenuPosition({
-        left: rect.left,
-        top: opensUpward ? rect.top - menuHeight - 4 : rect.bottom + 4,
+        left: clampedLeft,
+        top,
       });
     };
     updatePosition();
