@@ -49,8 +49,25 @@ export default function PatientsListPage() {
   const [qrModalLoading, setQrModalLoading] = useState(false);
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [menuOpensUpward, setMenuOpensUpward] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    if (!openMenuId) {
+      setMenuOpensUpward(false);
+      return;
+    }
+    const check = () => {
+      if (!menuRef.current) return;
+      const rect = menuRef.current.getBoundingClientRect();
+      const menuHeight = 260;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      setMenuOpensUpward(spaceBelow < menuHeight);
+    };
+    const t = setTimeout(check, 0);
+    return () => clearTimeout(t);
+  }, [openMenuId]);
 
   useEffect(() => {
     const q = new URLSearchParams();
@@ -269,7 +286,13 @@ export default function PatientsListPage() {
                             <MoreVertical className="size-4" />
                           </Button>
                           {openMenuId === p.id && (
-                            <div className="absolute left-0 top-full z-[100] mt-1 min-w-[180px] rounded-xl border border-slate-200 bg-white py-1 shadow-lg" dir="rtl">
+                            <div
+                              className={cn(
+                                "absolute left-0 z-[100] min-w-[180px] rounded-xl border border-slate-200 bg-white py-1 shadow-lg",
+                                menuOpensUpward ? "bottom-full mb-1" : "top-full mt-1"
+                              )}
+                              dir="rtl"
+                            >
                               <Link href={`/admin/patients/${p.id}`} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={() => setOpenMenuId(null)}>
                                 <Pencil className="size-4" /> ویرایش
                               </Link>
@@ -348,7 +371,13 @@ export default function PatientsListPage() {
                       <MoreVertical className="size-4" />
                     </Button>
                     {openMenuId === p.id && (
-                      <div className="absolute left-0 top-full z-[100] mt-1 min-w-[180px] rounded-xl border border-slate-200 bg-white py-1 shadow-lg" dir="rtl">
+                      <div
+                        className={cn(
+                          "absolute left-0 z-[100] min-w-[180px] rounded-xl border border-slate-200 bg-white py-1 shadow-lg",
+                          menuOpensUpward ? "bottom-full mb-1" : "top-full mt-1"
+                        )}
+                        dir="rtl"
+                      >
                         <Link href={`/admin/patients/${p.id}`} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={() => setOpenMenuId(null)}>
                           <Pencil className="size-4" /> ویرایش
                         </Link>
