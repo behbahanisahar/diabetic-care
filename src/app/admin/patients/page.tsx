@@ -212,7 +212,7 @@ export default function PatientsListPage() {
                     <th className="py-3 pe-4">کد ملی</th>
                     <th className="py-3 pe-4">شهر</th>
                     <th className="py-3 pe-4">تاریخ ثبت</th>
-                    <th className="py-3 pe-4">noe diabet / khun</th>
+                    <th className="py-3 pe-4">نوع دیابت / گروه خونی</th>
                     <th className="w-12 py-3 pe-4 ps-4" />
                   </tr>
                 </thead>
@@ -222,7 +222,7 @@ export default function PatientsListPage() {
                       <td className="py-3 pe-4 ps-4">
                         <span className="font-semibold text-slate-900">{p.firstName} {p.lastName}</span>
                       </td>
-                      <td className="py-3 pe-4 font-mono text-sm tabular-nums text-slate-700">{toPersianDigits(p.nationalId)}</td>
+                      <td className="font-national-id py-3 pe-4 text-sm tabular-nums text-slate-700">{toPersianDigits(p.nationalId)}</td>
                       <td className="py-3 pe-4 text-sm text-slate-600">{p.city}</td>
                       <td className="py-3 pe-4 text-sm text-slate-500">{formatDate(p.createdAt)}</td>
                       <td className="py-3 pe-4">
@@ -293,7 +293,7 @@ export default function PatientsListPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold text-slate-900">{p.firstName} {p.lastName}</p>
-                    <p className="truncate text-xs text-slate-500 sm:text-sm">
+                    <p className="font-national-id truncate text-xs text-slate-500 sm:text-sm">
                       {toPersianDigits(p.nationalId)} · {p.city}
                     </p>
                     <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-slate-400">
