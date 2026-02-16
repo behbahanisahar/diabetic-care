@@ -51,30 +51,32 @@ export default function PatientsListPage() {
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [menuPosition, setMenuPosition] = useState<{ top: number; left: number } | null>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const menuTriggerDesktopRef = useRef<HTMLDivElement>(null);
+  const menuTriggerMobileRef = useRef<HTMLDivElement>(null);
   const menuDropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   useEffect(() => {
-    if (!openMenuId || !menuRef.current) {
+    if (!openMenuId) {
       setMenuPosition(null);
       return;
     }
     const updatePosition = () => {
-      if (!menuRef.current) return;
-      const rect = menuRef.current.getBoundingClientRect();
+      const isLg = typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches;
+      const triggerEl = isLg ? menuTriggerDesktopRef.current : menuTriggerMobileRef.current;
+      if (!triggerEl) return;
+      const rect = triggerEl.getBoundingClientRect();
       const menuHeight = 260;
       const menuWidth = 180;
       const spaceBelow = window.innerHeight - rect.bottom;
       const opensUpward = spaceBelow < menuHeight;
-      // Position dropdown to the right of the button (so it opens over the table, not as a left sidebar)
-      const left = rect.right;
       const top = opensUpward ? rect.top - menuHeight - 4 : rect.bottom + 4;
-      // Keep menu on screen (RTL: table is right of button, so allow overflow right; clamp left so it doesn't go off left edge)
+      const left = rect.right;
       const clampedLeft = Math.max(8, Math.min(left, window.innerWidth - menuWidth - 8));
+      const clampedTop = Math.max(8, Math.min(top, window.innerHeight - menuHeight - 8));
       setMenuPosition({
         left: clampedLeft,
-        top,
+        top: clampedTop,
       });
     };
     updatePosition();
@@ -113,7 +115,12 @@ export default function PatientsListPage() {
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as Node;
-      if (menuRef.current?.contains(target) || menuDropdownRef.current?.contains(target)) return;
+      if (
+        menuTriggerDesktopRef.current?.contains(target) ||
+        menuTriggerMobileRef.current?.contains(target) ||
+        menuDropdownRef.current?.contains(target)
+      )
+        return;
       setOpenMenuId(null);
     }
     if (openMenuId) {
@@ -286,7 +293,7 @@ export default function PatientsListPage() {
                         </div>
                       </td>
                       <td className="py-3 pe-4 ps-4" onClick={(e) => e.stopPropagation()}>
-                        <div className="relative inline-block" ref={openMenuId === p.id ? menuRef : undefined}>
+                        <div className="relative inline-block" ref={openMenuId === p.id ? menuTriggerDesktopRef : undefined}>
                           <Button
                             variant="outline"
                             size="icon"
@@ -345,7 +352,7 @@ export default function PatientsListPage() {
                       )}
                     </div>
                   </div>
-                  <div className="relative shrink-0" ref={openMenuId === p.id ? menuRef : undefined} onClick={(e) => e.stopPropagation()}>
+                  <div className="relative shrink-0" ref={openMenuId === p.id ? menuTriggerMobileRef : undefined} onClick={(e) => e.stopPropagation()}>
                     <Button
                       variant="outline"
                       size="icon"
