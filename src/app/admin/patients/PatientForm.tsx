@@ -28,7 +28,7 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "@/components/ui/combobox";
-import { cn } from "@/lib/utils";
+import { cn, toPersianDigits } from "@/lib/utils";
 import { createResizedPreview } from "@/lib/image-preview";
 
 interface City {
@@ -56,6 +56,8 @@ interface PatientFormProps {
     address: string;
     bloodType: string;
     diabetesType: string;
+    weightKg: string;
+    heightCm: string;
     examinationLink: string;
     emergencyContact: string;
     emergencyContact2: string;
@@ -98,6 +100,8 @@ export default function PatientForm({
   const [birthCertFileName, setBirthCertFileName] = useState<string | null>(null);
   const [existingEducationalUrls, setExistingEducationalUrls] = useState<string[]>(initialEducationalFiles);
   const [existingExaminationUrls, setExistingExaminationUrls] = useState<string[]>(initialExaminationFiles);
+  const [selectedEducationalNames, setSelectedEducationalNames] = useState<string[]>([]);
+  const [selectedExaminationNames, setSelectedExaminationNames] = useState<string[]>([]);
 
   useEffect(() => {
     if (initialData?.birthDate) {
@@ -180,7 +184,7 @@ export default function PatientForm({
 
   return (
     <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm md:p-8">
-      <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+      <form onSubmit={handleSubmit} className="space-y-6" noValidate encType="multipart/form-data">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="firstName">نام *</Label>
@@ -324,6 +328,35 @@ export default function PatientForm({
             </Select>
           </div>
 
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="weightKg">وزن (کیلوگرم)</Label>
+              <Input
+                id="weightKg"
+                name="weightKg"
+                type="number"
+                step="0.1"
+                min="0"
+                placeholder="مثلاً 70"
+                defaultValue={initialData?.weightKg}
+                className={formInputStyle}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="heightCm">قد (سانتی‌متر)</Label>
+              <Input
+                id="heightCm"
+                name="heightCm"
+                type="number"
+                step="1"
+                min="0"
+                placeholder="مثلاً 170"
+                defaultValue={initialData?.heightCm}
+                className={formInputStyle}
+              />
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="examinationLink">لینک معاینه / آزمایش</Label>
             <Input
@@ -397,8 +430,18 @@ export default function PatientForm({
               dir="rtl"
             >
               <Upload className="h-5 w-5 shrink-0 text-slate-500" aria-hidden />
-              <input name="educationalFiles" type="file" multiple className="sr-only" />
-              <span className="flex-1 text-start">انتخاب یک یا چند فایل آموزشی</span>
+              <input
+                name="educationalFiles"
+                type="file"
+                multiple
+                className="sr-only"
+                onChange={(e) => setSelectedEducationalNames(e.target.files ? Array.from(e.target.files).map((f) => f.name) : [])}
+              />
+              <span className="flex-1 truncate text-start">
+                {selectedEducationalNames.length > 0
+                  ? `${toPersianDigits(String(selectedEducationalNames.length))} فایل: ${selectedEducationalNames.slice(0, 3).join("، ")}${selectedEducationalNames.length > 3 ? " و ..." : ""}`
+                  : "انتخاب یک یا چند فایل (عکس، PDF، Word و...)"}
+              </span>
             </label>
           </div>
 
@@ -431,8 +474,18 @@ export default function PatientForm({
               dir="rtl"
             >
               <Upload className="h-5 w-5 shrink-0 text-slate-500" aria-hidden />
-              <input name="examinationFiles" type="file" multiple accept="image/*,.pdf" className="sr-only" />
-              <span className="flex-1 text-start">انتخاب یک یا چند فایل (عکس یا PDF)</span>
+              <input
+                name="examinationFiles"
+                type="file"
+                multiple
+                className="sr-only"
+                onChange={(e) => setSelectedExaminationNames(e.target.files ? Array.from(e.target.files).map((f) => f.name) : [])}
+              />
+              <span className="flex-1 truncate text-start">
+                {selectedExaminationNames.length > 0
+                  ? `${toPersianDigits(String(selectedExaminationNames.length))} فایل: ${selectedExaminationNames.slice(0, 3).join("، ")}${selectedExaminationNames.length > 3 ? " و ..." : ""}`
+                  : "انتخاب یک یا چند فایل (عکس، PDF، Word و...)"}
+              </span>
             </label>
           </div>
 

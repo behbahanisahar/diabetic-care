@@ -159,6 +159,12 @@ export default async function PublicPatientPage({ params }: Props) {
             {patient.address && (
               <InfoItem label="آدرس" value={patient.address} />
             )}
+            {patient.weightKg != null && (
+              <InfoItem label="وزن" value={`${toPersianDigits(String(patient.weightKg))} کیلوگرم`} />
+            )}
+            {patient.heightCm != null && (
+              <InfoItem label="قد" value={`${toPersianDigits(String(patient.heightCm))} سانتی‌متر`} />
+            )}
             {patient.treatingPhysician && (
               <InfoItem label="پزشک معالج" value={patient.treatingPhysician} />
             )}

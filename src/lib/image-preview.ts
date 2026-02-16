@@ -87,9 +87,16 @@ export async function prepareFormDataWithResizedImages(formData: FormData): Prom
       out.set(key, birthCertResized ?? value);
       continue;
     }
+    if (key === "educationalFiles" || key === "examinationFiles") continue;
     if (value instanceof File) out.append(key, value);
     else out.set(key, value as string);
   }
+  formData.getAll("educationalFiles").forEach((f) => {
+    if (f instanceof File && f.size > 0) out.append("educationalFiles", f);
+  });
+  formData.getAll("examinationFiles").forEach((f) => {
+    if (f instanceof File && f.size > 0) out.append("examinationFiles", f);
+  });
   return out;
 }
 

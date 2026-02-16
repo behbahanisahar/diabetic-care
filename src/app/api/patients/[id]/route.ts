@@ -111,6 +111,14 @@ export async function PUT(
         updateData[field] = value;
       }
     }
+    if (body.weightKg !== undefined) {
+      const v = body.weightKg;
+      updateData.weightKg = v === "" || v === null ? null : Number(v);
+    }
+    if (body.heightCm !== undefined) {
+      const v = body.heightCm;
+      updateData.heightCm = v === "" || v === null ? null : Number(v);
+    }
 
     const nationalIdUrl =
       typeof body.nationalIdPhoto === "string" &&
@@ -146,9 +154,9 @@ export async function PUT(
       const msg = updateError instanceof Error ? updateError.message : "";
       const missingCol =
         (msg.includes("column") || msg.includes("Unknown")) &&
-        (msg.includes("treatingPhysician") || msg.includes("emergencyContact2") || msg.includes("educationalFiles") || msg.includes("examinationFiles"));
+        (msg.includes("treatingPhysician") || msg.includes("emergencyContact2") || msg.includes("educationalFiles") || msg.includes("examinationFiles") || msg.includes("weightKg") || msg.includes("heightCm"));
       if (missingCol) {
-        const { treatingPhysician: _1, emergencyContact2: _2, educationalFiles: _3, examinationFiles: _4, ...fallback } = updateData;
+        const { treatingPhysician: _1, emergencyContact2: _2, educationalFiles: _3, examinationFiles: _4, weightKg: _5, heightCm: _6, ...fallback } = updateData;
         patient = await prisma.patient.update({ where: { id }, data: fallback });
       } else {
         throw updateError;

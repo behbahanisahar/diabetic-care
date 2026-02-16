@@ -49,6 +49,8 @@ interface Patient {
   birthCertificatePhoto: string | null;
   bloodType: string | null;
   diabetesType: string | null;
+  weightKg: number | null;
+  heightCm: number | null;
   examinationLink: string | null;
   emergencyContact: string | null;
   emergencyContact2: string | null;
@@ -201,6 +203,8 @@ export default function EditPatientPage() {
           address: patient.address || "",
           bloodType: patient.bloodType || "",
           diabetesType: patient.diabetesType || "none",
+          weightKg: patient.weightKg != null ? String(patient.weightKg) : "",
+          heightCm: patient.heightCm != null ? String(patient.heightCm) : "",
           examinationLink: patient.examinationLink || "",
           emergencyContact: patient.emergencyContact || "",
           emergencyContact2: patient.emergencyContact2 || "",

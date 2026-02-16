@@ -107,6 +107,8 @@ export async function POST(request: NextRequest) {
       birthCertificatePhoto,
       bloodType,
       diabetesType,
+      weightKg,
+      heightCm,
       examinationLink,
       emergencyContact,
       emergencyContact2,
@@ -159,6 +161,8 @@ export async function POST(request: NextRequest) {
       birthCertificatePhoto: birthCertPath,
       bloodType: bloodType && String(bloodType) !== "" ? String(bloodType) : null,
       diabetesType: diabetesType ? String(diabetesType) : null,
+      weightKg: weightKg != null && weightKg !== "" ? Number(weightKg) : null,
+      heightCm: heightCm != null && heightCm !== "" ? Number(heightCm) : null,
       examinationLink: examinationLink ? String(examinationLink) : null,
       emergencyContact: emergencyContact ? String(emergencyContact) : null,
       emergencyContact2: emergencyContact2 ? String(emergencyContact2) : null,
@@ -177,9 +181,9 @@ export async function POST(request: NextRequest) {
       const msg = createError instanceof Error ? createError.message : "";
       const missingColumn =
         (msg.includes("column") || msg.includes("Unknown")) &&
-        (msg.includes("treatingPhysician") || msg.includes("emergencyContact2") || msg.includes("educationalFiles") || msg.includes("examinationFiles"));
+        (msg.includes("treatingPhysician") || msg.includes("emergencyContact2") || msg.includes("educationalFiles") || msg.includes("examinationFiles") || msg.includes("weightKg") || msg.includes("heightCm"));
       if (missingColumn) {
-        const { treatingPhysician: _1, emergencyContact2: _2, educationalFiles: _3, examinationFiles: _4, ...fallbackData } = createData;
+        const { treatingPhysician: _1, emergencyContact2: _2, educationalFiles: _3, examinationFiles: _4, weightKg: _5, heightCm: _6, ...fallbackData } = createData;
         patient = await prisma.patient.create({ data: fallbackData });
       } else {
         throw createError;
