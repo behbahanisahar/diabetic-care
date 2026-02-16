@@ -4,9 +4,19 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { toPersianDigits, normalizeToAsciiDigits } from "@/lib/utils";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Download, ExternalLink } from "lucide-react";
 
 export const dynamic = "force-dynamic";
+
+function parseFileList(value: string | null | undefined): string[] {
+  if (value == null || value === "") return [];
+  try {
+    const arr = JSON.parse(value);
+    return Array.isArray(arr) ? arr.filter((x): x is string => typeof x === "string") : [];
+  } catch {
+    return [];
+  }
+}
 
 interface Props {
   params: Promise<{ qrCodeId: string }>;
@@ -63,6 +73,8 @@ export default async function PublicPatientPage({ params }: Props) {
         : "بدون دیابت";
 
   const hasPhotos = !!(patient.nationalIdPhoto || patient.birthCertificatePhoto);
+  const educationalFilesList = parseFileList(patient.educationalFiles);
+  const examinationFilesList = parseFileList(patient.examinationFiles);
 
   return (
     <div className="min-h-screen bg-slate-50" dir="rtl">
@@ -91,7 +103,7 @@ export default async function PublicPatientPage({ params }: Props) {
 
         {/* Emergency strip */}
         <div className="mb-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div>
               <p className="text-xs font-medium text-slate-500">گروه خونی</p>
               <p className="mt-1 text-lg font-bold text-slate-900">{patient.bloodType || "—"}</p>
@@ -101,13 +113,26 @@ export default async function PublicPatientPage({ params }: Props) {
               <p className="mt-1 text-lg font-semibold text-slate-900">{diabetesLabel}</p>
             </div>
             <div>
-              <p className="text-xs font-medium text-slate-500">تماس اضطراری</p>
+              <p className="text-xs font-medium text-slate-500">تماس اضطراری ۱</p>
               {patient.emergencyContact ? (
                 <a
                   href={`tel:${normalizeToAsciiDigits(patient.emergencyContact).replace(/\D/g, "")}`}
                   className="mt-1 block text-lg font-bold text-primary hover:underline"
                 >
                   {toPersianDigits(patient.emergencyContact)}
+                </a>
+              ) : (
+                <p className="mt-1 text-slate-400">—</p>
+              )}
+            </div>
+            <div>
+              <p className="text-xs font-medium text-slate-500">تماس اضطراری ۲</p>
+              {patient.emergencyContact2 ? (
+                <a
+                  href={`tel:${normalizeToAsciiDigits(patient.emergencyContact2).replace(/\D/g, "")}`}
+                  className="mt-1 block text-lg font-bold text-primary hover:underline"
+                >
+                  {toPersianDigits(patient.emergencyContact2)}
                 </a>
               ) : (
                 <p className="mt-1 text-slate-400">—</p>
@@ -159,6 +184,14 @@ export default async function PublicPatientPage({ params }: Props) {
                       loading="lazy"
                     />
                   </div>
+                  <div className="mt-2 flex gap-2">
+                    <a href={patient.nationalIdPhoto} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                      <ExternalLink className="size-3.5" /> مشاهده
+                    </a>
+                    <a href={patient.nationalIdPhoto} download className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                      <Download className="size-3.5" /> دانلود
+                    </a>
+                  </div>
                 </div>
               )}
               {patient.birthCertificatePhoto && (
@@ -175,9 +208,61 @@ export default async function PublicPatientPage({ params }: Props) {
                       loading="lazy"
                     />
                   </div>
+                  <div className="mt-2 flex gap-2">
+                    <a href={patient.birthCertificatePhoto} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                      <ExternalLink className="size-3.5" /> مشاهده
+                    </a>
+                    <a href={patient.birthCertificatePhoto} download className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                      <Download className="size-3.5" /> دانلود
+                    </a>
+                  </div>
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Educational files */}
+        {educationalFilesList.length > 0 && (
+          <div className="mb-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">فایل‌های آموزشی</h2>
+            <ul className="space-y-2">
+              {educationalFilesList.map((url, i) => (
+                <li key={url} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-100 bg-slate-50/50 px-4 py-3">
+                  <span className="text-sm font-medium text-slate-700">فایل آموزشی {educationalFilesList.length > 1 ? toPersianDigits(String(i + 1)) : ""}</span>
+                  <div className="flex gap-3">
+                    <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                      <ExternalLink className="size-3.5" /> مشاهده
+                    </a>
+                    <a href={url} download className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                      <Download className="size-3.5" /> دانلود
+                    </a>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Examination / sonography files */}
+        {examinationFilesList.length > 0 && (
+          <div className="mb-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">فایل‌های سونوگرافی / معاینه</h2>
+            <ul className="space-y-2">
+              {examinationFilesList.map((url, i) => (
+                <li key={url} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-100 bg-slate-50/50 px-4 py-3">
+                  <span className="text-sm font-medium text-slate-700">فایل معاینه {examinationFilesList.length > 1 ? toPersianDigits(String(i + 1)) : ""}</span>
+                  <div className="flex gap-3">
+                    <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                      <ExternalLink className="size-3.5" /> مشاهده
+                    </a>
+                    <a href={url} download className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                      <Download className="size-3.5" /> دانلود
+                    </a>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 

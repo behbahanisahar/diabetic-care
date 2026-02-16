@@ -4,6 +4,16 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
+
+function parseJsonStringArray(value: string | null | undefined): string[] {
+  if (value == null || value === "") return [];
+  try {
+    const arr = JSON.parse(value);
+    return Array.isArray(arr) ? arr.filter((x): x is string => typeof x === "string") : [];
+  } catch {
+    return [];
+  }
+}
 import { Trash2 } from "lucide-react";
 import PatientForm from "../PatientForm";
 import { Button } from "@/components/ui/button";
@@ -41,6 +51,9 @@ interface Patient {
   diabetesType: string | null;
   examinationLink: string | null;
   emergencyContact: string | null;
+  emergencyContact2: string | null;
+  educationalFiles: string | null;
+  examinationFiles: string | null;
   treatingPhysician: string | null;
   notes: string | null;
 }
@@ -190,11 +203,14 @@ export default function EditPatientPage() {
           diabetesType: patient.diabetesType || "none",
           examinationLink: patient.examinationLink || "",
           emergencyContact: patient.emergencyContact || "",
+          emergencyContact2: patient.emergencyContact2 || "",
           treatingPhysician: patient.treatingPhysician || "",
           notes: patient.notes || "",
         }}
         initialNationalIdPhoto={patient.nationalIdPhoto || undefined}
         initialBirthCertificatePhoto={patient.birthCertificatePhoto || undefined}
+        initialEducationalFiles={parseJsonStringArray(patient.educationalFiles)}
+        initialExaminationFiles={parseJsonStringArray(patient.examinationFiles)}
         onSubmit={handleSubmit}
         loading={loading}
       />

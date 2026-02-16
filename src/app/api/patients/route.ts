@@ -66,16 +66,30 @@ export async function POST(request: NextRequest) {
       const formData = await request.formData();
       body = Object.fromEntries(formData.entries()) as Record<string, unknown>;
 
-      // Handle file uploads in parallel (faster when both images are present)
       const nationalIdFile = formData.get("nationalIdPhoto") as File | null;
       const birthCertFile = formData.get("birthCertificatePhoto") as File | null;
+      const educationalFileList = formData
+        .getAll("educationalFiles")
+        .filter((f): f is File => f instanceof File && f.size > 0);
+      const examinationFileList = formData
+        .getAll("examinationFiles")
+        .filter((f): f is File => f instanceof File && f.size > 0);
 
-      const [nationalIdUrl, birthCertUrl] = await Promise.all([
+      const [nationalIdUrl, birthCertUrl, ...eduAndExam] = await Promise.all([
         nationalIdFile?.size ? uploadFile(nationalIdFile, "nid") : Promise.resolve(null),
         birthCertFile?.size ? uploadFile(birthCertFile, "bc") : Promise.resolve(null),
+        ...educationalFileList.map((f, i) => uploadFile(f, `edu-${i}`)),
+        ...examinationFileList.map((f, i) => uploadFile(f, `exam-${i}`)),
       ]);
       if (nationalIdUrl) body.nationalIdPhoto = nationalIdUrl;
       if (birthCertUrl) body.birthCertificatePhoto = birthCertUrl;
+      const nEdu = educationalFileList.length;
+      const eduUrls = eduAndExam.slice(0, nEdu).filter((u): u is string => u != null);
+      const examUrls = eduAndExam.slice(nEdu).filter((u): u is string => u != null);
+      if (eduUrls.length > 0) body.educationalFiles = JSON.stringify(eduUrls);
+      if (examUrls.length > 0) body.examinationFiles = JSON.stringify(examUrls);
+      if (formData.get("emergencyContact2") !== undefined)
+        body.emergencyContact2 = formData.get("emergencyContact2");
     } else {
       body = await request.json();
     }
@@ -95,6 +109,9 @@ export async function POST(request: NextRequest) {
       diabetesType,
       examinationLink,
       emergencyContact,
+      emergencyContact2,
+      educationalFiles,
+      examinationFiles,
       treatingPhysician,
       notes,
     } = body;
@@ -144,6 +161,11 @@ export async function POST(request: NextRequest) {
       diabetesType: diabetesType ? String(diabetesType) : null,
       examinationLink: examinationLink ? String(examinationLink) : null,
       emergencyContact: emergencyContact ? String(emergencyContact) : null,
+      emergencyContact2: emergencyContact2 ? String(emergencyContact2) : null,
+      educationalFiles:
+        educationalFiles && typeof educationalFiles === "string" ? educationalFiles : null,
+      examinationFiles:
+        examinationFiles && typeof examinationFiles === "string" ? examinationFiles : null,
       treatingPhysician: treatingPhysician ? String(treatingPhysician) : null,
       notes: notes ? String(notes) : null,
     };
@@ -154,10 +176,11 @@ export async function POST(request: NextRequest) {
     } catch (createError) {
       const msg = createError instanceof Error ? createError.message : "";
       const missingColumn =
-        msg.includes("treatingPhysician") && (msg.includes("column") || msg.includes("Unknown"));
+        (msg.includes("column") || msg.includes("Unknown")) &&
+        (msg.includes("treatingPhysician") || msg.includes("emergencyContact2") || msg.includes("educationalFiles") || msg.includes("examinationFiles"));
       if (missingColumn) {
-        const { treatingPhysician: _t, ...dataWithoutPhysician } = createData;
-        patient = await prisma.patient.create({ data: dataWithoutPhysician });
+        const { treatingPhysician: _1, emergencyContact2: _2, educationalFiles: _3, examinationFiles: _4, ...fallbackData } = createData;
+        patient = await prisma.patient.create({ data: fallbackData });
       } else {
         throw createError;
       }

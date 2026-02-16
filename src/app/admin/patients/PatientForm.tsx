@@ -58,11 +58,16 @@ interface PatientFormProps {
     diabetesType: string;
     examinationLink: string;
     emergencyContact: string;
+    emergencyContact2: string;
     treatingPhysician: string;
     notes: string;
   }>;
   initialNationalIdPhoto?: string;
   initialBirthCertificatePhoto?: string;
+  /** URLs of existing educational files (for edit) */
+  initialEducationalFiles?: string[];
+  /** URLs of existing examination files (for edit) */
+  initialExaminationFiles?: string[];
 }
 
 const formInputStyle = "h-11 w-full rounded-xl border-slate-200 bg-slate-50/50 px-3 py-2 transition-colors focus:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/50";
@@ -79,6 +84,8 @@ export default function PatientForm({
   initialData,
   initialNationalIdPhoto,
   initialBirthCertificatePhoto,
+  initialEducationalFiles = [],
+  initialExaminationFiles = [],
 }: PatientFormProps) {
   const [birthDateValue, setBirthDateValue] = useState<Value>(null);
   const [nationalIdPreview, setNationalIdPreview] = useState<string | null>(
@@ -89,6 +96,8 @@ export default function PatientForm({
   );
   const [nationalIdFileName, setNationalIdFileName] = useState<string | null>(null);
   const [birthCertFileName, setBirthCertFileName] = useState<string | null>(null);
+  const [existingEducationalUrls, setExistingEducationalUrls] = useState<string[]>(initialEducationalFiles);
+  const [existingExaminationUrls, setExistingExaminationUrls] = useState<string[]>(initialExaminationFiles);
 
   useEffect(() => {
     if (initialData?.birthDate) {
@@ -328,12 +337,22 @@ export default function PatientForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="emergencyContact">تماس اضطراری</Label>
+            <Label htmlFor="emergencyContact">تماس اضطراری ۱</Label>
             <Input
               id="emergencyContact"
               name="emergencyContact"
               defaultValue={initialData?.emergencyContact}
               placeholder="شماره تماس"
+              className={formInputStyle}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="emergencyContact2">تماس اضطراری ۲ (اختیاری)</Label>
+            <Input
+              id="emergencyContact2"
+              name="emergencyContact2"
+              defaultValue={initialData?.emergencyContact2}
+              placeholder="شماره دوم"
               className={formInputStyle}
             />
           </div>
@@ -347,6 +366,74 @@ export default function PatientForm({
               placeholder="نام پزشک معالج"
               className={formInputStyle}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label>فایل‌های آموزشی (چند فایل)</Label>
+            {existingEducationalUrls.length > 0 && (
+              <ul className="mb-2 space-y-1 rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-sm">
+                {existingEducationalUrls.map((url) => (
+                  <li key={url} className="flex items-center justify-between gap-2">
+                    <a href={url} target="_blank" rel="noopener noreferrer" className="truncate text-primary hover:underline">
+                      فایل آموزشی
+                    </a>
+                    <button
+                      type="button"
+                      className="shrink-0 text-destructive hover:underline"
+                      onClick={() => setExistingEducationalUrls((p) => p.filter((u) => u !== url))}
+                    >
+                      حذف
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <input type="hidden" name="existingEducationalFiles" value={JSON.stringify(existingEducationalUrls)} />
+            <label
+              className={cn(
+                "flex min-h-[44px] w-full cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm hover:border-primary/50 hover:bg-primary/5",
+                "text-slate-700"
+              )}
+              dir="rtl"
+            >
+              <Upload className="h-5 w-5 shrink-0 text-slate-500" aria-hidden />
+              <input name="educationalFiles" type="file" multiple className="sr-only" />
+              <span className="flex-1 text-start">انتخاب یک یا چند فایل آموزشی</span>
+            </label>
+          </div>
+
+          <div className="space-y-2">
+            <Label>فایل‌های سونوگرافی / معاینه (چند فایل)</Label>
+            {existingExaminationUrls.length > 0 && (
+              <ul className="mb-2 space-y-1 rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-sm">
+                {existingExaminationUrls.map((url) => (
+                  <li key={url} className="flex items-center justify-between gap-2">
+                    <a href={url} target="_blank" rel="noopener noreferrer" className="truncate text-primary hover:underline">
+                      فایل معاینه
+                    </a>
+                    <button
+                      type="button"
+                      className="shrink-0 text-destructive hover:underline"
+                      onClick={() => setExistingExaminationUrls((p) => p.filter((u) => u !== url))}
+                    >
+                      حذف
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <input type="hidden" name="existingExaminationFiles" value={JSON.stringify(existingExaminationUrls)} />
+            <label
+              className={cn(
+                "flex min-h-[44px] w-full cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm hover:border-primary/50 hover:bg-primary/5",
+                "text-slate-700"
+              )}
+              dir="rtl"
+            >
+              <Upload className="h-5 w-5 shrink-0 text-slate-500" aria-hidden />
+              <input name="examinationFiles" type="file" multiple accept="image/*,.pdf" className="sr-only" />
+              <span className="flex-1 text-start">انتخاب یک یا چند فایل (عکس یا PDF)</span>
+            </label>
           </div>
 
           <div className="space-y-2">

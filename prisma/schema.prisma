@@ -24,6 +24,9 @@ model Patient {
   diabetesType          String?  // "type1" | "type2" | "none"
   examinationLink       String?
   emergencyContact      String?
+  emergencyContact2     String?  // شماره اضطراری دوم (حداکثر ۲)
+  educationalFiles      String?  // JSON array of URLs: فایل‌های آموزشی
+  examinationFiles      String?  // JSON array of URLs: سونوگرافی / معاینه
   treatingPhysician     String?  // پزشک معالج
   notes                 String?
   createdAt             DateTime @default(now())
