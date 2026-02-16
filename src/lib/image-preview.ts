@@ -2,16 +2,16 @@ const PREVIEW_MAX_WIDTH = 520;
 const PREVIEW_QUALITY = 0.82;
 
 /** Max dimension for upload (keeps ID docs readable, reduces payload). */
-const UPLOAD_MAX_WIDTH = 1600;
-const UPLOAD_JPEG_QUALITY = 0.85;
+const UPLOAD_MAX_WIDTH = 1500;
+const UPLOAD_JPEG_QUALITY = 0.82;
 /** Don't resize if under this size (bytes). */
-const UPLOAD_MIN_SIZE = 200 * 1024;
+const UPLOAD_MIN_SIZE = 150 * 1024;
 
-/** Smaller max dimension for educational/examination files = faster upload. */
-const UPLOAD_MAX_WIDTH_EXTRA = 1200;
-const UPLOAD_JPEG_QUALITY_EXTRA = 0.8;
+/** Smaller max dimension for educational/examination files = much faster upload. */
+const UPLOAD_MAX_WIDTH_EXTRA = 960;
+const UPLOAD_JPEG_QUALITY_EXTRA = 0.72;
 /** Resize extra files above this size. */
-const UPLOAD_MIN_SIZE_EXTRA = 80 * 1024;
+const UPLOAD_MIN_SIZE_EXTRA = 50 * 1024;
 
 /**
  * Resize image for upload: smaller payload = faster submit. Returns original file if not image or small.

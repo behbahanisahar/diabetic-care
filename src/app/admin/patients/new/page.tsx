@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import PatientForm from "../PatientForm";
 import { Button } from "@/components/ui/button";
 import { prepareFormDataWithResizedImages } from "@/lib/image-preview";
+import { submitFormWithProgress } from "@/lib/submit-with-progress";
+import { toPersianDigits } from "@/lib/utils";
 
 interface City {
   id: number;
@@ -18,6 +20,7 @@ export default function NewPatientPage() {
   const [cities, setCities] = useState<City[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingPhase, setLoadingPhase] = useState<"idle" | "resizing" | "sending">("idle");
+  const [uploadPercent, setUploadPercent] = useState(0);
   const [qrResult, setQrResult] = useState<{ qrCode: string; qrUrl: string; firstName: string; lastName: string } | null>(null);
 
   useEffect(() => {
@@ -30,24 +33,27 @@ export default function NewPatientPage() {
   const handleSubmit = async (formData: FormData) => {
     setLoading(true);
     setLoadingPhase("resizing");
+    setUploadPercent(0);
     try {
       const body = await prepareFormDataWithResizedImages(formData);
       setLoadingPhase("sending");
-      const res = await fetch("/api/patients", {
-        method: "POST",
+      const { ok, status, data } = await submitFormWithProgress(
+        "/api/patients",
+        "POST",
         body,
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error || "خطا در ثبت");
+        (p) => setUploadPercent(p)
+      );
+      if (!ok) {
+        toast.error((data as { error?: string })?.error || "خطا در ثبت");
         return;
       }
-      if (data.qrCode && data.qrUrl) {
+      const d = data as { qrCode?: string; qrUrl?: string; firstName?: string; lastName?: string };
+      if (d.qrCode && d.qrUrl) {
         setQrResult({
-          qrCode: data.qrCode,
-          qrUrl: data.qrUrl,
-          firstName: data.firstName,
-          lastName: data.lastName,
+          qrCode: d.qrCode,
+          qrUrl: d.qrUrl,
+          firstName: d.firstName ?? "",
+          lastName: d.lastName ?? "",
         });
       } else {
         router.push("/admin/patients");
@@ -57,6 +63,7 @@ export default function NewPatientPage() {
     } finally {
       setLoading(false);
       setLoadingPhase("idle");
+      setUploadPercent(0);
     }
   };
 
@@ -106,7 +113,13 @@ export default function NewPatientPage() {
         cities={cities}
         onSubmit={handleSubmit}
         loading={loading}
-        loadingLabel={loadingPhase === "resizing" ? "در حال فشرده‌سازی تصاویر..." : "در حال ارسال..."}
+        loadingLabel={
+          loadingPhase === "resizing"
+            ? "در حال فشرده‌سازی تصاویر..."
+            : uploadPercent > 0
+              ? `در حال ارسال... ${toPersianDigits(String(uploadPercent))}٪`
+              : "در حال ارسال..."
+        }
       />
     </div>
   );

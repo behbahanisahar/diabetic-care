@@ -18,6 +18,8 @@ import { Trash2 } from "lucide-react";
 import PatientForm from "../PatientForm";
 import { Button } from "@/components/ui/button";
 import { prepareFormDataWithResizedImages } from "@/lib/image-preview";
+import { submitFormWithProgress } from "@/lib/submit-with-progress";
+import { toPersianDigits } from "@/lib/utils";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -68,6 +70,7 @@ export default function EditPatientPage() {
   const [cities, setCities] = useState<City[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingPhase, setLoadingPhase] = useState<"idle" | "resizing" | "sending">("idle");
+  const [uploadPercent, setUploadPercent] = useState(0);
   const [initialLoading, setInitialLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -107,16 +110,18 @@ export default function EditPatientPage() {
   const handleSubmit = async (formData: FormData) => {
     setLoading(true);
     setLoadingPhase("resizing");
+    setUploadPercent(0);
     try {
       const body = await prepareFormDataWithResizedImages(formData);
       setLoadingPhase("sending");
-      const res = await fetch(`/api/patients/${id}`, {
-        method: "PUT",
+      const { ok, data } = await submitFormWithProgress(
+        `/api/patients/${id}`,
+        "PUT",
         body,
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        toast.error(data.error || "خطا در بروزرسانی");
+        (p) => setUploadPercent(p)
+      );
+      if (!ok) {
+        toast.error((data as { error?: string })?.error || "خطا در بروزرسانی");
         return;
       }
       toast.success("تغییرات ذخیره شد");
@@ -127,6 +132,7 @@ export default function EditPatientPage() {
     } finally {
       setLoading(false);
       setLoadingPhase("idle");
+      setUploadPercent(0);
     }
   };
 
@@ -193,7 +199,13 @@ export default function EditPatientPage() {
       <PatientForm
         cities={cities}
         submitLabel="ذخیره تغییرات"
-        loadingLabel={loadingPhase === "resizing" ? "در حال فشرده‌سازی تصاویر..." : "در حال ارسال..."}
+        loadingLabel={
+          loadingPhase === "resizing"
+            ? "در حال فشرده‌سازی تصاویر..."
+            : uploadPercent > 0
+              ? `در حال ارسال... ${toPersianDigits(String(uploadPercent))}٪`
+              : "در حال ارسال..."
+        }
         cancelHref="/admin/patients"
         cancelLabel="انصراف"
         initialData={{

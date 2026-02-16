@@ -15,6 +15,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import DateObject from "react-date-object";
+import persian from "react-date-object/calendars/persian";
+import persian_fa from "react-date-object/locales/persian_fa";
 import { toPersianDigits } from "@/lib/utils";
 
 interface Patient {
@@ -85,13 +88,11 @@ export default function PatientsListPage() {
     }
   }, [openMenuId]);
 
-  function formatDate(iso: string) {
+  function formatDateShamsi(iso: string) {
     try {
-      const d = new Date(iso);
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, "0");
-      const day = String(d.getDate()).padStart(2, "0");
-      return `${toPersianDigits(String(y))}/${toPersianDigits(m)}/${toPersianDigits(day)}`;
+      const d = new DateObject(new Date(iso));
+      d.convert(persian, persian_fa);
+      return d.format("YYYY/MM/DD");
     } catch {
       return "—";
     }
@@ -224,7 +225,7 @@ export default function PatientsListPage() {
                       </td>
                       <td className="font-national-id py-3 pe-4 text-sm tabular-nums text-slate-700">{toPersianDigits(p.nationalId)}</td>
                       <td className="py-3 pe-4 text-sm text-slate-600">{p.city}</td>
-                      <td className="py-3 pe-4 text-sm text-slate-500">{formatDate(p.createdAt)}</td>
+                      <td className="py-3 pe-4 text-sm text-slate-500">{formatDateShamsi(p.createdAt)}</td>
                       <td className="py-3 pe-4">
                         <div className="flex flex-wrap gap-1">
                           {p.diabetesType === "type1" && (
@@ -297,7 +298,7 @@ export default function PatientsListPage() {
                       {toPersianDigits(p.nationalId)} · {p.city}
                     </p>
                     <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-slate-400">
-                      <span>{formatDate(p.createdAt)}</span>
+                      <span>{formatDateShamsi(p.createdAt)}</span>
                       {p.diabetesType === "type1" && (
                         <span className="rounded bg-primary/10 px-1.5 py-0.5 font-medium text-primary">نوع ۱</span>
                       )}

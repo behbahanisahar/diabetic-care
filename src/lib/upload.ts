@@ -7,8 +7,8 @@ import sharp from "sharp";
 const MAX_IMAGE_DIMENSION = 1600;
 /** JPEG quality for resized images (85 keeps text and details clear). */
 const JPEG_QUALITY = 85;
-/** Only resize if file is larger than this (bytes) to avoid re-encoding small images. */
-const MIN_SIZE_TO_RESIZE = 150 * 1024;
+/** Only resize if file is larger than this (bytes). Client already resizes; skip server resize for small payloads. */
+const MIN_SIZE_TO_RESIZE = 280 * 1024;
 
 /**
  * Resize and compress image if it's large; otherwise return original buffer.
@@ -31,7 +31,7 @@ async function resizeImageIfNeeded(
     const w = meta.width ?? 0;
     const h = meta.height ?? 0;
     const maxSide = Math.max(w, h);
-    if (maxSide <= MAX_IMAGE_DIMENSION) {
+    if (maxSide <= MAX_IMAGE_DIMENSION || buffer.length < 200 * 1024) {
       return {
         buffer,
         contentType: mimeType || "image/jpeg",
