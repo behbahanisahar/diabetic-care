@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
   const nationalIdSearch = normalizeSearchForNationalId(search);
   const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
   const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "10", 10)));
+  const order = searchParams.get("order") === "asc" ? "asc" : "desc";
 
   const where = search
     ? {
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
     prisma.patient.count({ where }),
     prisma.patient.findMany({
       where,
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: order },
       skip: (page - 1) * limit,
       take: limit,
     }),

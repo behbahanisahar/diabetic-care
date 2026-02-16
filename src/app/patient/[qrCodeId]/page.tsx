@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { BackButton } from "@/components/back-button";
 import { toPersianDigits, normalizeToAsciiDigits } from "@/lib/utils";
-import { ArrowRight, Download, ExternalLink } from "lucide-react";
+import { Download, ExternalLink } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -81,12 +81,7 @@ export default async function PublicPatientPage({ params }: Props) {
       <div className="mx-auto max-w-xl px-4 py-6 sm:py-10">
         {/* Back button */}
         <div className="mb-4">
-          <Button variant="ghost" size="sm" className="rounded-lg text-slate-600" asChild>
-            <Link href="/" className="inline-flex items-center gap-1">
-              <ArrowRight className="size-4" />
-              برگشت
-            </Link>
-          </Button>
+          <BackButton className="rounded-lg text-slate-600" />
         </div>
         {/* Header */}
         <p className="mb-6 text-center text-xs font-medium tracking-wide text-slate-500">

@@ -411,35 +411,6 @@ export default function PatientForm({
 
           <div className="space-y-2">
             <Label>فایل‌های آموزشی (چند فایل)</Label>
-            {existingEducationalUrls.length > 0 && (
-              <ul className="mb-2 space-y-1 rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-sm">
-                {existingEducationalUrls.map((url) => (
-                  <li key={url} className="flex items-center justify-between gap-2">
-                    <a href={url} target="_blank" rel="noopener noreferrer" className="truncate text-primary hover:underline">
-                      فایل آموزشی
-                    </a>
-                    <button
-                      type="button"
-                      className="shrink-0 text-destructive hover:underline"
-                      onClick={() => setExistingEducationalUrls((p) => p.filter((u) => u !== url))}
-                    >
-                      حذف
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-            {selectedEducationalFiles.length > 0 && (
-              <ul className="mb-2 space-y-2 rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-sm">
-                {selectedEducationalFiles.map((file, index) => (
-                  <FilePreviewItem
-                    key={`${file.name}-${index}`}
-                    file={file}
-                    onRemove={() => setSelectedEducationalFiles((p) => p.filter((_, i) => i !== index))}
-                  />
-                ))}
-              </ul>
-            )}
             <input type="hidden" name="existingEducationalFiles" value={JSON.stringify(existingEducationalUrls)} />
             <label
               className={cn(
@@ -461,21 +432,17 @@ export default function PatientForm({
               />
               <span className="flex-1 truncate text-start">انتخاب یک یا چند فایل (عکس، PDF، Word و...)</span>
             </label>
-          </div>
-
-          <div className="space-y-2">
-            <Label>فایل‌های سونوگرافی / معاینه (چند فایل)</Label>
-            {existingExaminationUrls.length > 0 && (
-              <ul className="mb-2 space-y-1 rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-sm">
-                {existingExaminationUrls.map((url) => (
+            {existingEducationalUrls.length > 0 && (
+              <ul className="mt-2 space-y-1 rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-sm">
+                {existingEducationalUrls.map((url) => (
                   <li key={url} className="flex items-center justify-between gap-2">
                     <a href={url} target="_blank" rel="noopener noreferrer" className="truncate text-primary hover:underline">
-                      فایل معاینه
+                      فایل آموزشی
                     </a>
                     <button
                       type="button"
                       className="shrink-0 text-destructive hover:underline"
-                      onClick={() => setExistingExaminationUrls((p) => p.filter((u) => u !== url))}
+                      onClick={() => setExistingEducationalUrls((p) => p.filter((u) => u !== url))}
                     >
                       حذف
                     </button>
@@ -483,17 +450,21 @@ export default function PatientForm({
                 ))}
               </ul>
             )}
-            {selectedExaminationFiles.length > 0 && (
-              <ul className="mb-2 space-y-2 rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-sm">
-                {selectedExaminationFiles.map((file, index) => (
+            {selectedEducationalFiles.length > 0 && (
+              <ul className="mt-2 space-y-2 rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-sm">
+                {selectedEducationalFiles.map((file, index) => (
                   <FilePreviewItem
                     key={`${file.name}-${index}`}
                     file={file}
-                    onRemove={() => setSelectedExaminationFiles((p) => p.filter((_, i) => i !== index))}
+                    onRemove={() => setSelectedEducationalFiles((p) => p.filter((_, i) => i !== index))}
                   />
                 ))}
               </ul>
             )}
+          </div>
+
+          <div className="space-y-2">
+            <Label>فایل‌های سونوگرافی / معاینه (چند فایل)</Label>
             <input type="hidden" name="existingExaminationFiles" value={JSON.stringify(existingExaminationUrls)} />
             <label
               className={cn(
@@ -515,6 +486,35 @@ export default function PatientForm({
               />
               <span className="flex-1 truncate text-start">انتخاب یک یا چند فایل (عکس، PDF، Word و...)</span>
             </label>
+            {existingExaminationUrls.length > 0 && (
+              <ul className="mt-2 space-y-1 rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-sm">
+                {existingExaminationUrls.map((url) => (
+                  <li key={url} className="flex items-center justify-between gap-2">
+                    <a href={url} target="_blank" rel="noopener noreferrer" className="truncate text-primary hover:underline">
+                      فایل معاینه
+                    </a>
+                    <button
+                      type="button"
+                      className="shrink-0 text-destructive hover:underline"
+                      onClick={() => setExistingExaminationUrls((p) => p.filter((u) => u !== url))}
+                    >
+                      حذف
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {selectedExaminationFiles.length > 0 && (
+              <ul className="mt-2 space-y-2 rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-sm">
+                {selectedExaminationFiles.map((file, index) => (
+                  <FilePreviewItem
+                    key={`${file.name}-${index}`}
+                    file={file}
+                    onRemove={() => setSelectedExaminationFiles((p) => p.filter((_, i) => i !== index))}
+                  />
+                ))}
+              </ul>
+            )}
           </div>
 
           <div className="space-y-2">

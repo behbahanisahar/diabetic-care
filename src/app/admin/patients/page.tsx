@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { SearchIcon, Pencil, Download, ExternalLink, Trash2, ChevronRight, ChevronLeft, QrCode, ArrowRight } from "lucide-react";
+import { SearchIcon, Pencil, Download, ExternalLink, Trash2, ChevronRight, ChevronLeft, QrCode, ArrowRight, MoreVertical, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toPersianDigits } from "@/lib/utils";
 
 interface Patient {
@@ -44,12 +43,16 @@ export default function PatientsListPage() {
   const [qrModalPatient, setQrModalPatient] = useState<Patient | null>(null);
   const [qrModalImage, setQrModalImage] = useState<string | null>(null);
   const [qrModalLoading, setQrModalLoading] = useState(false);
+  const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const q = new URLSearchParams();
     if (search) q.set("search", search);
     q.set("page", String(page));
     q.set("limit", String(PAGE_SIZE));
+    q.set("order", sortOrder);
     setLoading(true);
     fetch(`/api/patients?${q}`)
       .then((r) => r.json())
@@ -70,7 +73,29 @@ export default function PatientsListPage() {
         setTotalPages(0);
       })
       .finally(() => setLoading(false));
-  }, [search, page]);
+  }, [search, page, sortOrder]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) setOpenMenuId(null);
+    }
+    if (openMenuId) {
+      document.addEventListener("click", handleClickOutside);
+      return () => document.removeEventListener("click", handleClickOutside);
+    }
+  }, [openMenuId]);
+
+  function formatDate(iso: string) {
+    try {
+      const d = new Date(iso);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${toPersianDigits(String(y))}/${toPersianDigits(m)}/${toPersianDigits(day)}`;
+    } catch {
+      return "—";
+    }
+  }
 
   useEffect(() => {
     if (!qrModalPatient) {
@@ -126,17 +151,33 @@ export default function PatientsListPage() {
       </div>
 
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative w-full sm:w-72">
-          <SearchIcon className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-          <Input
-            placeholder="جستجو نام، کد ملی، شهر..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            className="h-11 rounded-xl border-slate-200 bg-white ps-10"
-          />
+        <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="relative w-full sm:w-72">
+            <SearchIcon className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+            <Input
+              placeholder="جستجو نام، کد ملی، شهر..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              className="h-11 rounded-xl border-slate-200 bg-white ps-10"
+            />
+          </div>
+          <div className="flex items-center gap-2 text-sm text-slate-600">
+            <Calendar className="size-4 shrink-0" />
+            <select
+              value={sortOrder}
+              onChange={(e) => {
+                setSortOrder(e.target.value as "desc" | "asc");
+                setPage(1);
+              }}
+              className="h-9 rounded-lg border border-slate-200 bg-white px-3"
+            >
+              <option value="desc">جدیدترین اول</option>
+              <option value="asc">قدیمی‌ترین اول</option>
+            </select>
+          </div>
         </div>
         <Button className="h-11 shrink-0 rounded-xl font-medium" asChild>
           <Link href="/admin/patients/new">بیمار جدید</Link>
@@ -178,6 +219,10 @@ export default function PatientsListPage() {
                     <p className="mt-0.5 truncate text-sm text-slate-500">
                       {toPersianDigits(p.nationalId)} · {p.city}
                     </p>
+                    <p className="mt-1 flex items-center gap-1 text-xs text-slate-400">
+                      <Calendar className="size-3" />
+                      ثبت: {formatDate(p.createdAt)}
+                    </p>
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       {p.diabetesType === "type1" && (
                         <span className="rounded-md bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
@@ -197,73 +242,80 @@ export default function PatientsListPage() {
                     </div>
                   </div>
                 </div>
-                <TooltipProvider delayDuration={300}>
-                  <div className="flex shrink-0 flex-wrap items-center justify-end gap-1 sm:justify-start">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="outline" size="sm" className="h-9 rounded-lg px-3" asChild>
-                          <Link href={`/admin/patients/${p.id}`}>
-                            <Pencil className="size-3.5 me-1" />
-                            ویرایش
-                          </Link>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top">ویرایش</TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-9 rounded-lg px-3"
-                          onClick={() => setQrModalPatient(p)}
-                        >
-                          <QrCode className="size-3.5 me-1" />
-                          نمایش QR
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top">اول QR را ببینید، سپس دانلود یا مشاهده صفحه</TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="outline" size="sm" className="h-9 rounded-lg px-3" asChild>
-                          <Link href={`/patient/${p.qrCodeId}`} target="_blank" rel="noopener noreferrer">
-                            <ExternalLink className="size-3.5 me-1" />
-                            مشاهده صفحه
-                          </Link>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top">مشاهده صفحه عمومی بیمار</TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-9 rounded-lg px-3"
-                          onClick={() => handleDownloadQR(p)}
-                        >
-                          <Download className="size-3.5 me-1" />
-                          دانلود QR
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top">دانلود QR کد</TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-9 w-9 shrink-0 rounded-lg border-destructive/30 text-destructive hover:bg-destructive/10 hover:border-destructive/50"
-                          onClick={() => setPatientToDelete(p)}
-                        >
-                          <Trash2 className="size-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top">حذف</TooltipContent>
-                    </Tooltip>
-                  </div>
-                </TooltipProvider>
+                <div className="relative flex shrink-0 items-center" ref={openMenuId === p.id ? menuRef : undefined}>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-9 w-9 rounded-lg"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenMenuId((prev) => (prev === p.id ? null : p.id));
+                    }}
+                    aria-expanded={openMenuId === p.id}
+                    aria-haspopup="true"
+                  >
+                    <MoreVertical className="size-4" />
+                  </Button>
+                  {openMenuId === p.id && (
+                    <div
+                      className="absolute left-0 top-full z-20 mt-1 min-w-[180px] rounded-xl border border-slate-200 bg-white py-1 shadow-lg"
+                      dir="rtl"
+                    >
+                      <Link
+                        href={`/admin/patients/${p.id}`}
+                        className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                        onClick={() => setOpenMenuId(null)}
+                      >
+                        <Pencil className="size-4" />
+                        ویرایش
+                      </Link>
+                      <button
+                        type="button"
+                        className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                        onClick={() => {
+                          setQrModalPatient(p);
+                          setOpenMenuId(null);
+                        }}
+                      >
+                        <QrCode className="size-4" />
+                        نمایش QR
+                      </button>
+                      <Link
+                        href={`/patient/${p.qrCodeId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                        onClick={() => setOpenMenuId(null)}
+                      >
+                        <ExternalLink className="size-4" />
+                        مشاهده صفحه
+                      </Link>
+                      <button
+                        type="button"
+                        className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                        onClick={() => {
+                          handleDownloadQR(p);
+                          setOpenMenuId(null);
+                        }}
+                      >
+                        <Download className="size-4" />
+                        دانلود QR
+                      </button>
+                      <hr className="my-1 border-slate-100" />
+                      <button
+                        type="button"
+                        className="flex w-full items-center gap-2 px-4 py-2 text-sm text-destructive hover:bg-destructive/5"
+                        onClick={() => {
+                          setPatientToDelete(p);
+                          setOpenMenuId(null);
+                        }}
+                      >
+                        <Trash2 className="size-4" />
+                        حذف
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>
