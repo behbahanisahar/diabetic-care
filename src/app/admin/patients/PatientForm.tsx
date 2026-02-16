@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { BLOOD_TYPES, DIABETES_TYPES, validateIranianNationalId } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Upload } from "lucide-react";
+import { Upload, FileText, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -100,8 +100,8 @@ export default function PatientForm({
   const [birthCertFileName, setBirthCertFileName] = useState<string | null>(null);
   const [existingEducationalUrls, setExistingEducationalUrls] = useState<string[]>(initialEducationalFiles);
   const [existingExaminationUrls, setExistingExaminationUrls] = useState<string[]>(initialExaminationFiles);
-  const [selectedEducationalNames, setSelectedEducationalNames] = useState<string[]>([]);
-  const [selectedExaminationNames, setSelectedExaminationNames] = useState<string[]>([]);
+  const [selectedEducationalFiles, setSelectedEducationalFiles] = useState<File[]>([]);
+  const [selectedExaminationFiles, setSelectedExaminationFiles] = useState<File[]>([]);
 
   useEffect(() => {
     if (initialData?.birthDate) {
@@ -142,7 +142,15 @@ export default function PatientForm({
       const d = birthDateValue as { format?: (s: string) => string };
       hiddenBirth.value = d?.format?.("YYYY-MM-DD") ?? (birthDateValue as Date).toISOString().slice(0, 10);
     }
-    const submitData = new FormData(form);
+    const rawFormData = new FormData(form);
+    const submitData = new FormData();
+    for (const [key, value] of rawFormData.entries()) {
+      if (key === "educationalFiles" || key === "examinationFiles") continue;
+      if (value instanceof File) submitData.append(key, value);
+      else submitData.set(key, value as string);
+    }
+    selectedEducationalFiles.forEach((f) => submitData.append("educationalFiles", f));
+    selectedExaminationFiles.forEach((f) => submitData.append("examinationFiles", f));
     if (submitData.get("bloodType") === BLOOD_TYPE_EMPTY) submitData.set("bloodType", "");
     onSubmit(submitData);
   };
@@ -421,6 +429,17 @@ export default function PatientForm({
                 ))}
               </ul>
             )}
+            {selectedEducationalFiles.length > 0 && (
+              <ul className="mb-2 space-y-2 rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-sm">
+                {selectedEducationalFiles.map((file, index) => (
+                  <FilePreviewItem
+                    key={`${file.name}-${index}`}
+                    file={file}
+                    onRemove={() => setSelectedEducationalFiles((p) => p.filter((_, i) => i !== index))}
+                  />
+                ))}
+              </ul>
+            )}
             <input type="hidden" name="existingEducationalFiles" value={JSON.stringify(existingEducationalUrls)} />
             <label
               className={cn(
@@ -431,17 +450,16 @@ export default function PatientForm({
             >
               <Upload className="h-5 w-5 shrink-0 text-slate-500" aria-hidden />
               <input
-                name="educationalFiles"
                 type="file"
                 multiple
                 className="sr-only"
-                onChange={(e) => setSelectedEducationalNames(e.target.files ? Array.from(e.target.files).map((f) => f.name) : [])}
+                onChange={(e) => {
+                  const files = e.target.files ? Array.from(e.target.files) : [];
+                  setSelectedEducationalFiles((p) => [...p, ...files]);
+                  e.target.value = "";
+                }}
               />
-              <span className="flex-1 truncate text-start">
-                {selectedEducationalNames.length > 0
-                  ? `${toPersianDigits(String(selectedEducationalNames.length))} فایل: ${selectedEducationalNames.slice(0, 3).join("، ")}${selectedEducationalNames.length > 3 ? " و ..." : ""}`
-                  : "انتخاب یک یا چند فایل (عکس، PDF، Word و...)"}
-              </span>
+              <span className="flex-1 truncate text-start">انتخاب یک یا چند فایل (عکس، PDF، Word و...)</span>
             </label>
           </div>
 
@@ -465,6 +483,17 @@ export default function PatientForm({
                 ))}
               </ul>
             )}
+            {selectedExaminationFiles.length > 0 && (
+              <ul className="mb-2 space-y-2 rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-sm">
+                {selectedExaminationFiles.map((file, index) => (
+                  <FilePreviewItem
+                    key={`${file.name}-${index}`}
+                    file={file}
+                    onRemove={() => setSelectedExaminationFiles((p) => p.filter((_, i) => i !== index))}
+                  />
+                ))}
+              </ul>
+            )}
             <input type="hidden" name="existingExaminationFiles" value={JSON.stringify(existingExaminationUrls)} />
             <label
               className={cn(
@@ -475,17 +504,16 @@ export default function PatientForm({
             >
               <Upload className="h-5 w-5 shrink-0 text-slate-500" aria-hidden />
               <input
-                name="examinationFiles"
                 type="file"
                 multiple
                 className="sr-only"
-                onChange={(e) => setSelectedExaminationNames(e.target.files ? Array.from(e.target.files).map((f) => f.name) : [])}
+                onChange={(e) => {
+                  const files = e.target.files ? Array.from(e.target.files) : [];
+                  setSelectedExaminationFiles((p) => [...p, ...files]);
+                  e.target.value = "";
+                }}
               />
-              <span className="flex-1 truncate text-start">
-                {selectedExaminationNames.length > 0
-                  ? `${toPersianDigits(String(selectedExaminationNames.length))} فایل: ${selectedExaminationNames.slice(0, 3).join("، ")}${selectedExaminationNames.length > 3 ? " و ..." : ""}`
-                  : "انتخاب یک یا چند فایل (عکس، PDF، Word و...)"}
-              </span>
+              <span className="flex-1 truncate text-start">انتخاب یک یا چند فایل (عکس، PDF، Word و...)</span>
             </label>
           </div>
 
@@ -581,5 +609,44 @@ export default function PatientForm({
           </div>
         </form>
     </div>
+  );
+}
+
+function FilePreviewItem({ file, onRemove }: { file: File; onRemove: () => void }) {
+  const isImage = file.type.startsWith("image/");
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isImage) {
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    }
+  }, [file, isImage]);
+
+  return (
+    <li className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-2">
+      {isImage && previewUrl ? (
+        <div className="size-12 shrink-0 overflow-hidden rounded border border-slate-200 bg-slate-100">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={previewUrl} alt="" className="h-full w-full object-cover" />
+        </div>
+      ) : (
+        <div className="flex size-12 shrink-0 items-center justify-center rounded border border-slate-200 bg-slate-100">
+          <FileText className="size-6 text-slate-500" />
+        </div>
+      )}
+      <span className="min-w-0 flex-1 truncate text-slate-700" title={file.name}>
+        {file.name}
+      </span>
+      <button
+        type="button"
+        onClick={onRemove}
+        className="shrink-0 rounded p-1.5 text-destructive hover:bg-destructive/10"
+        title="حذف"
+      >
+        <Trash2 className="size-4" />
+      </button>
+    </li>
   );
 }
