@@ -30,6 +30,15 @@ import {
 } from "@/components/ui/combobox";
 import { cn, toPersianDigits } from "@/lib/utils";
 import { createResizedPreview } from "@/lib/image-preview";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface City {
   id: number;
@@ -101,6 +110,17 @@ export default function PatientForm({
   const [existingExaminationUrls, setExistingExaminationUrls] = useState<string[]>(initialExaminationFiles);
   const [selectedEducationalFiles, setSelectedEducationalFiles] = useState<File[]>([]);
   const [selectedExaminationFiles, setSelectedExaminationFiles] = useState<File[]>([]);
+  type PendingRemove = { kind: "existingEdu"; url: string } | { kind: "existingExam"; url: string } | { kind: "selectedEdu"; index: number } | { kind: "selectedExam"; index: number };
+  const [pendingRemove, setPendingRemove] = useState<PendingRemove | null>(null);
+
+  const handleConfirmRemove = () => {
+    if (!pendingRemove) return;
+    if (pendingRemove.kind === "existingEdu") setExistingEducationalUrls((p) => p.filter((u) => u !== pendingRemove.url));
+    else if (pendingRemove.kind === "existingExam") setExistingExaminationUrls((p) => p.filter((u) => u !== pendingRemove.url));
+    else if (pendingRemove.kind === "selectedEdu") setSelectedEducationalFiles((p) => p.filter((_, i) => i !== pendingRemove.index));
+    else if (pendingRemove.kind === "selectedExam") setSelectedExaminationFiles((p) => p.filter((_, i) => i !== pendingRemove.index));
+    setPendingRemove(null);
+  };
 
   useEffect(() => {
     if (initialData?.birthDate) {
@@ -441,7 +461,7 @@ export default function PatientForm({
                     <button
                       type="button"
                       className="shrink-0 text-destructive hover:underline"
-                      onClick={() => setExistingEducationalUrls((p) => p.filter((u) => u !== url))}
+                      onClick={() => setPendingRemove({ kind: "existingEdu", url })}
                     >
                       حذف
                     </button>
@@ -455,7 +475,7 @@ export default function PatientForm({
                   <FilePreviewItem
                     key={`${file.name}-${index}`}
                     file={file}
-                    onRemove={() => setSelectedEducationalFiles((p) => p.filter((_, i) => i !== index))}
+                    onRemove={() => setPendingRemove({ kind: "selectedEdu", index })}
                   />
                 ))}
               </ul>
@@ -495,7 +515,7 @@ export default function PatientForm({
                     <button
                       type="button"
                       className="shrink-0 text-destructive hover:underline"
-                      onClick={() => setExistingExaminationUrls((p) => p.filter((u) => u !== url))}
+                      onClick={() => setPendingRemove({ kind: "existingExam", url })}
                     >
                       حذف
                     </button>
@@ -509,7 +529,7 @@ export default function PatientForm({
                   <FilePreviewItem
                     key={`${file.name}-${index}`}
                     file={file}
-                    onRemove={() => setSelectedExaminationFiles((p) => p.filter((_, i) => i !== index))}
+                    onRemove={() => setPendingRemove({ kind: "selectedExam", index })}
                   />
                 ))}
               </ul>
@@ -607,6 +627,23 @@ export default function PatientForm({
             )}
           </div>
         </form>
+
+        <AlertDialog open={!!pendingRemove} onOpenChange={(open) => !open && setPendingRemove(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>حذف فایل از لیست</AlertDialogTitle>
+              <AlertDialogDescription>
+                آیا از حذف این فایل از لیست اطمینان دارید؟
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>انصراف</AlertDialogCancel>
+              <Button variant="destructive" size="sm" className="rounded-lg" onClick={handleConfirmRemove}>
+                بله، حذف شود
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
     </div>
   );
 }
