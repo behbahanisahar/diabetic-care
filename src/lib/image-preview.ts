@@ -65,16 +65,30 @@ export function resizeImageForUpload(file: File): Promise<File> {
   });
 }
 
+/** Resize a file for upload if it's a large image; otherwise return as-is. */
+function resizeFileForUpload(file: File): Promise<File> {
+  if (!file.type.startsWith("image/") || file.size < UPLOAD_MIN_SIZE) return Promise.resolve(file);
+  return resizeImageForUpload(file);
+}
+
 /**
- * Returns a new FormData with image fields resized for faster upload. Copy all other fields as-is.
+ * Returns a new FormData with all image fields (including multi-files) resized in parallel for faster upload.
  */
 export async function prepareFormDataWithResizedImages(formData: FormData): Promise<FormData> {
   const nationalIdFile = formData.get("nationalIdPhoto") as File | null;
   const birthCertFile = formData.get("birthCertificatePhoto") as File | null;
+  const educationalList = formData.getAll("educationalFiles").filter((f): f is File => f instanceof File && f.size > 0);
+  const examinationList = formData.getAll("examinationFiles").filter((f): f is File => f instanceof File && f.size > 0);
 
-  const [nationalIdResized, birthCertResized] = await Promise.all([
+  const [
+    nationalIdResized,
+    birthCertResized,
+    ...eduAndExamResized
+  ] = await Promise.all([
     nationalIdFile?.size ? resizeImageForUpload(nationalIdFile) : Promise.resolve(null),
     birthCertFile?.size ? resizeImageForUpload(birthCertFile) : Promise.resolve(null),
+    ...educationalList.map(resizeFileForUpload),
+    ...examinationList.map(resizeFileForUpload),
   ]);
 
   const out = new FormData();
@@ -91,12 +105,11 @@ export async function prepareFormDataWithResizedImages(formData: FormData): Prom
     if (value instanceof File) out.append(key, value);
     else out.set(key, value as string);
   }
-  formData.getAll("educationalFiles").forEach((f) => {
-    if (f instanceof File && f.size > 0) out.append("educationalFiles", f);
-  });
-  formData.getAll("examinationFiles").forEach((f) => {
-    if (f instanceof File && f.size > 0) out.append("examinationFiles", f);
-  });
+  const nEdu = educationalList.length;
+  const eduResized = eduAndExamResized.slice(0, nEdu) as File[];
+  const examResized = eduAndExamResized.slice(nEdu) as File[];
+  eduResized.forEach((f) => out.append("educationalFiles", f));
+  examResized.forEach((f) => out.append("examinationFiles", f));
   return out;
 }
 

@@ -18,10 +18,11 @@ export default function AdminLoginPage() {
       .then((r) => {
         if (r.ok) {
           router.replace("/admin/patients");
+          return;
         }
+        setCheckingAuth(false);
       })
-      .catch(() => {})
-      .finally(() => setCheckingAuth(false));
+      .catch(() => setCheckingAuth(false));
   }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -144,15 +144,15 @@ export default function PatientsListPage() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-10">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">لیست بیماران</h1>
-        <p className="mt-1 text-sm text-slate-500">جستجو و مدیریت بیماران دیابتی</p>
+    <div className="min-h-screen px-3 py-4 sm:px-4 sm:py-6 md:px-6 lg:mx-auto lg:max-w-6xl lg:px-4 lg:py-8">
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-xl font-bold text-slate-900 sm:text-2xl">لیست بیماران</h1>
+        <p className="mt-0.5 text-xs text-slate-500 sm:text-sm">جستجو و مدیریت بیماران دیابتی</p>
       </div>
 
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
-          <div className="relative w-full sm:w-72">
+      <div className="mb-4 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+          <div className="relative w-full min-w-0 sm:max-w-[280px]">
             <SearchIcon className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
             <Input
               placeholder="جستجو نام، کد ملی، شهر..."
@@ -161,7 +161,7 @@ export default function PatientsListPage() {
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              className="h-11 rounded-xl border-slate-200 bg-white ps-10"
+              className="h-10 rounded-xl border-slate-200 bg-white ps-10 sm:h-11"
             />
           </div>
           <div className="flex items-center gap-2 text-sm text-slate-600">
@@ -172,27 +172,27 @@ export default function PatientsListPage() {
                 setSortOrder(e.target.value as "desc" | "asc");
                 setPage(1);
               }}
-              className="h-9 rounded-lg border border-slate-200 bg-white px-3"
+              className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-sm"
             >
               <option value="desc">جدیدترین اول</option>
               <option value="asc">قدیمی‌ترین اول</option>
             </select>
           </div>
         </div>
-        <Button className="h-11 shrink-0 rounded-xl font-medium" asChild>
+        <Button className="h-10 shrink-0 rounded-xl font-medium sm:h-11" asChild>
           <Link href="/admin/patients/new">بیمار جدید</Link>
         </Button>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm sm:rounded-2xl">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-24">
-            <div className="size-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            <p className="mt-4 text-sm text-slate-500">در حال بارگذاری...</p>
+          <div className="flex flex-col items-center justify-center py-16 sm:py-24">
+            <div className="size-9 animate-spin rounded-full border-2 border-primary border-t-transparent sm:size-10" />
+            <p className="mt-3 text-sm text-slate-500">در حال بارگذاری...</p>
           </div>
         ) : patients.length === 0 ? (
-          <div className="py-20 text-center">
-            <p className="text-slate-500">
+          <div className="py-12 text-center sm:py-20">
+            <p className="text-sm text-slate-500">
               {search ? "نتیجه‌ای یافت نشد." : "هنوز بیماری ثبت نشده است."}
             </p>
             {!search && (
@@ -202,123 +202,152 @@ export default function PatientsListPage() {
             )}
           </div>
         ) : (
-          <div className="divide-y divide-slate-100">
-            {patients.map((p) => (
-              <div
-                key={p.id}
-                className="flex flex-col gap-4 p-4 transition-colors hover:bg-slate-50/50 sm:flex-row sm:items-center sm:gap-6 sm:px-6"
-              >
-                <div className="flex min-w-0 flex-1 items-center gap-4">
-                  <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-sm font-semibold text-primary">
+          <>
+            {/* Desktop: table layout */}
+            <div className="hidden overflow-x-auto lg:block" dir="rtl">
+              <table className="w-full min-w-[640px] border-collapse text-right">
+                <thead>
+                  <tr className="border-b border-slate-100 bg-slate-50/80 text-xs font-medium text-slate-500">
+                    <th className="py-3 pe-4 ps-4">نام</th>
+                    <th className="py-3 pe-4">کد ملی</th>
+                    <th className="py-3 pe-4">شهر</th>
+                    <th className="py-3 pe-4">تاریخ ثبت</th>
+                    <th className="py-3 pe-4">نوع / خون</th>
+                    <th className="w-12 py-3 pe-4 ps-4" />
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {patients.map((p) => (
+                    <tr key={p.id} className="transition-colors hover:bg-slate-50/50">
+                      <td className="py-3 pe-4 ps-4">
+                        <span className="font-semibold text-slate-900">{p.firstName} {p.lastName}</span>
+                      </td>
+                      <td className="py-3 pe-4 font-mono text-sm text-slate-600">{toPersianDigits(p.nationalId)}</td>
+                      <td className="py-3 pe-4 text-sm text-slate-600">{p.city}</td>
+                      <td className="py-3 pe-4 text-sm text-slate-500">{formatDate(p.createdAt)}</td>
+                      <td className="py-3 pe-4">
+                        <div className="flex flex-wrap gap-1">
+                          {p.diabetesType === "type1" && (
+                            <span className="rounded bg-primary/10 px-1.5 py-0.5 text-xs text-primary">نوع ۱</span>
+                          )}
+                          {p.diabetesType === "type2" && (
+                            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">نوع ۲</span>
+                          )}
+                          {p.bloodType && (
+                            <span className="rounded border border-slate-200 px-1.5 py-0.5 text-xs text-slate-600">{p.bloodType}</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-3 pe-4 ps-4">
+                        <div className="relative inline-block" ref={openMenuId === p.id ? menuRef : undefined}>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8 rounded-lg"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenMenuId((prev) => (prev === p.id ? null : p.id));
+                            }}
+                            aria-expanded={openMenuId === p.id}
+                            aria-haspopup="true"
+                          >
+                            <MoreVertical className="size-4" />
+                          </Button>
+                          {openMenuId === p.id && (
+                            <div className="absolute left-0 top-full z-20 mt-1 min-w-[180px] rounded-xl border border-slate-200 bg-white py-1 shadow-lg" dir="rtl">
+                              <Link href={`/admin/patients/${p.id}`} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={() => setOpenMenuId(null)}>
+                                <Pencil className="size-4" /> ویرایش
+                              </Link>
+                              <button type="button" className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={() => { setQrModalPatient(p); setOpenMenuId(null); }}>
+                                <QrCode className="size-4" /> نمایش QR
+                              </button>
+                              <Link href={`/patient/${p.qrCodeId}`} target="_blank" rel="noopener noreferrer" className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={() => setOpenMenuId(null)}>
+                                <ExternalLink className="size-4" /> مشاهده صفحه
+                              </Link>
+                              <button type="button" className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={() => { handleDownloadQR(p); setOpenMenuId(null); }}>
+                                <Download className="size-4" /> دانلود QR
+                              </button>
+                              <hr className="my-1 border-slate-100" />
+                              <button type="button" className="flex w-full items-center gap-2 px-4 py-2 text-sm text-destructive hover:bg-destructive/5" onClick={() => { setPatientToDelete(p); setOpenMenuId(null); }}>
+                                <Trash2 className="size-4" /> حذف
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile / tablet: compact cards */}
+            <div className="divide-y divide-slate-100 lg:hidden">
+              {patients.map((p) => (
+                <div
+                  key={p.id}
+                  className="flex items-center gap-3 p-3 transition-colors hover:bg-slate-50/50 sm:gap-4 sm:p-4"
+                >
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-xs font-semibold text-primary sm:size-11 sm:rounded-xl">
                     {p.firstName[0]} {p.lastName[0]}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-semibold text-slate-900">
-                      {p.firstName} {p.lastName}
-                    </p>
-                    <p className="mt-0.5 truncate text-sm text-slate-500">
+                    <p className="truncate font-semibold text-slate-900">{p.firstName} {p.lastName}</p>
+                    <p className="truncate text-xs text-slate-500 sm:text-sm">
                       {toPersianDigits(p.nationalId)} · {p.city}
                     </p>
-                    <p className="mt-1 flex items-center gap-1 text-xs text-slate-400">
-                      <Calendar className="size-3" />
-                      ثبت: {formatDate(p.createdAt)}
-                    </p>
-                    <div className="mt-2 flex flex-wrap gap-1.5">
+                    <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-slate-400">
+                      <span>{formatDate(p.createdAt)}</span>
                       {p.diabetesType === "type1" && (
-                        <span className="rounded-md bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                          دیابت نوع ۱
-                        </span>
+                        <span className="rounded bg-primary/10 px-1.5 py-0.5 font-medium text-primary">نوع ۱</span>
                       )}
                       {p.diabetesType === "type2" && (
-                        <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
-                          دیابت نوع ۲
-                        </span>
+                        <span className="rounded bg-slate-100 px-1.5 py-0.5 text-slate-600">نوع ۲</span>
                       )}
                       {p.bloodType && (
-                        <span className="rounded-md border border-slate-200 px-2 py-0.5 text-xs text-slate-600">
-                          {p.bloodType}
-                        </span>
+                        <span className="rounded border border-slate-200 px-1.5 py-0.5 text-slate-600">{p.bloodType}</span>
                       )}
                     </div>
                   </div>
-                </div>
-                <div className="relative flex shrink-0 items-center" ref={openMenuId === p.id ? menuRef : undefined}>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-9 w-9 rounded-lg"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenMenuId((prev) => (prev === p.id ? null : p.id));
-                    }}
-                    aria-expanded={openMenuId === p.id}
-                    aria-haspopup="true"
-                  >
-                    <MoreVertical className="size-4" />
-                  </Button>
-                  {openMenuId === p.id && (
-                    <div
-                      className="absolute left-0 top-full z-20 mt-1 min-w-[180px] rounded-xl border border-slate-200 bg-white py-1 shadow-lg"
-                      dir="rtl"
+                  <div className="relative shrink-0" ref={openMenuId === p.id ? menuRef : undefined}>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-9 w-9 rounded-lg"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenuId((prev) => (prev === p.id ? null : p.id));
+                      }}
+                      aria-expanded={openMenuId === p.id}
+                      aria-haspopup="true"
                     >
-                      <Link
-                        href={`/admin/patients/${p.id}`}
-                        className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
-                        onClick={() => setOpenMenuId(null)}
-                      >
-                        <Pencil className="size-4" />
-                        ویرایش
-                      </Link>
-                      <button
-                        type="button"
-                        className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
-                        onClick={() => {
-                          setQrModalPatient(p);
-                          setOpenMenuId(null);
-                        }}
-                      >
-                        <QrCode className="size-4" />
-                        نمایش QR
-                      </button>
-                      <Link
-                        href={`/patient/${p.qrCodeId}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
-                        onClick={() => setOpenMenuId(null)}
-                      >
-                        <ExternalLink className="size-4" />
-                        مشاهده صفحه
-                      </Link>
-                      <button
-                        type="button"
-                        className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
-                        onClick={() => {
-                          handleDownloadQR(p);
-                          setOpenMenuId(null);
-                        }}
-                      >
-                        <Download className="size-4" />
-                        دانلود QR
-                      </button>
-                      <hr className="my-1 border-slate-100" />
-                      <button
-                        type="button"
-                        className="flex w-full items-center gap-2 px-4 py-2 text-sm text-destructive hover:bg-destructive/5"
-                        onClick={() => {
-                          setPatientToDelete(p);
-                          setOpenMenuId(null);
-                        }}
-                      >
-                        <Trash2 className="size-4" />
-                        حذف
-                      </button>
-                    </div>
-                  )}
+                      <MoreVertical className="size-4" />
+                    </Button>
+                    {openMenuId === p.id && (
+                      <div className="absolute left-0 top-full z-20 mt-1 min-w-[180px] rounded-xl border border-slate-200 bg-white py-1 shadow-lg" dir="rtl">
+                        <Link href={`/admin/patients/${p.id}`} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={() => setOpenMenuId(null)}>
+                          <Pencil className="size-4" /> ویرایش
+                        </Link>
+                        <button type="button" className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={() => { setQrModalPatient(p); setOpenMenuId(null); }}>
+                          <QrCode className="size-4" /> نمایش QR
+                        </button>
+                        <Link href={`/patient/${p.qrCodeId}`} target="_blank" rel="noopener noreferrer" className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={() => setOpenMenuId(null)}>
+                          <ExternalLink className="size-4" /> مشاهده صفحه
+                        </Link>
+                        <button type="button" className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={() => { handleDownloadQR(p); setOpenMenuId(null); }}>
+                          <Download className="size-4" /> دانلود QR
+                        </button>
+                        <hr className="my-1 border-slate-100" />
+                        <button type="button" className="flex w-full items-center gap-2 px-4 py-2 text-sm text-destructive hover:bg-destructive/5" onClick={() => { setPatientToDelete(p); setOpenMenuId(null); }}>
+                          <Trash2 className="size-4" /> حذف
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </>
         )}
         {!loading && total > 0 && (
           <div className="flex flex-col items-center justify-between gap-3 border-t border-slate-100 px-4 py-3 sm:flex-row sm:px-6">
