@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SearchIcon, Pencil, Download, ExternalLink, Trash2, ChevronRight, ChevronLeft, QrCode, ArrowRight, MoreVertical, Calendar } from "lucide-react";
@@ -19,7 +20,7 @@ import {
 import DateObject from "react-date-object";
 import persian from "react-date-object/calendars/persian";
 import persian_fa from "react-date-object/locales/persian_fa";
-import { cn, toPersianDigits } from "@/lib/utils";
+import { toPersianDigits } from "@/lib/utils";
 
 interface Patient {
   id: string;
@@ -49,23 +50,29 @@ export default function PatientsListPage() {
   const [qrModalLoading, setQrModalLoading] = useState(false);
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  const [menuOpensUpward, setMenuOpensUpward] = useState(false);
+  const [menuPosition, setMenuPosition] = useState<{ top: number; left: number } | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const menuDropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   useEffect(() => {
-    if (!openMenuId) {
-      setMenuOpensUpward(false);
+    if (!openMenuId || !menuRef.current) {
+      setMenuPosition(null);
       return;
     }
-    const check = () => {
+    const updatePosition = () => {
       if (!menuRef.current) return;
       const rect = menuRef.current.getBoundingClientRect();
       const menuHeight = 260;
       const spaceBelow = window.innerHeight - rect.bottom;
-      setMenuOpensUpward(spaceBelow < menuHeight);
+      const opensUpward = spaceBelow < menuHeight;
+      setMenuPosition({
+        left: rect.left,
+        top: opensUpward ? rect.top - menuHeight - 4 : rect.bottom + 4,
+      });
     };
-    const t = setTimeout(check, 0);
+    updatePosition();
+    const t = setTimeout(updatePosition, 0);
     return () => clearTimeout(t);
   }, [openMenuId]);
 
@@ -99,7 +106,9 @@ export default function PatientsListPage() {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) setOpenMenuId(null);
+      const target = event.target as Node;
+      if (menuRef.current?.contains(target) || menuDropdownRef.current?.contains(target)) return;
+      setOpenMenuId(null);
     }
     if (openMenuId) {
       document.addEventListener("click", handleClickOutside);
@@ -270,8 +279,8 @@ export default function PatientsListPage() {
                           )}
                         </div>
                       </td>
-                      <td className="relative z-10 py-3 pe-4 ps-4" onClick={(e) => e.stopPropagation()}>
-                        <div className={cn("relative inline-block", openMenuId === p.id && "z-[9999]")} ref={openMenuId === p.id ? menuRef : undefined}>
+                      <td className="py-3 pe-4 ps-4" onClick={(e) => e.stopPropagation()}>
+                        <div className="relative inline-block" ref={openMenuId === p.id ? menuRef : undefined}>
                           <Button
                             variant="outline"
                             size="icon"
@@ -285,32 +294,6 @@ export default function PatientsListPage() {
                           >
                             <MoreVertical className="size-4" />
                           </Button>
-                          {openMenuId === p.id && (
-                            <div
-                              className={cn(
-                                "absolute left-0 z-[9999] min-w-[180px] rounded-xl border border-slate-200 bg-white py-1 shadow-lg",
-                                menuOpensUpward ? "bottom-full mb-1" : "top-full mt-1"
-                              )}
-                              dir="rtl"
-                            >
-                              <Link href={`/admin/patients/${p.id}`} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={() => setOpenMenuId(null)}>
-                                <Pencil className="size-4" /> ویرایش
-                              </Link>
-                              <button type="button" className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={() => { setQrModalPatient(p); setOpenMenuId(null); }}>
-                                <QrCode className="size-4" /> نمایش QR
-                              </button>
-                              <Link href={`/patient/${p.qrCodeId}`} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); }}>
-                                <ExternalLink className="size-4" /> مشاهده صفحه
-                              </Link>
-                              <button type="button" className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={() => { handleDownloadQR(p); setOpenMenuId(null); }}>
-                                <Download className="size-4" /> دانلود QR
-                              </button>
-                              <hr className="my-1 border-slate-100" />
-                              <button type="button" className="flex w-full items-center gap-2 px-4 py-2 text-sm text-destructive hover:bg-destructive/5" onClick={() => { setPatientToDelete(p); setOpenMenuId(null); }}>
-                                <Trash2 className="size-4" /> حذف
-                              </button>
-                            </div>
-                          )}
                         </div>
                       </td>
                     </tr>
@@ -370,32 +353,6 @@ export default function PatientsListPage() {
                     >
                       <MoreVertical className="size-4" />
                     </Button>
-                    {openMenuId === p.id && (
-                      <div
-                        className={cn(
-                          "absolute left-0 z-[9999] min-w-[180px] rounded-xl border border-slate-200 bg-white py-1 shadow-lg",
-                          menuOpensUpward ? "bottom-full mb-1" : "top-full mt-1"
-                        )}
-                        dir="rtl"
-                      >
-                        <Link href={`/admin/patients/${p.id}`} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={() => setOpenMenuId(null)}>
-                          <Pencil className="size-4" /> ویرایش
-                        </Link>
-                        <button type="button" className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={() => { setQrModalPatient(p); setOpenMenuId(null); }}>
-                          <QrCode className="size-4" /> نمایش QR
-                        </button>
-                        <Link href={`/patient/${p.qrCodeId}`} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); }}>
-                          <ExternalLink className="size-4" /> مشاهده صفحه
-                        </Link>
-                        <button type="button" className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={() => { handleDownloadQR(p); setOpenMenuId(null); }}>
-                          <Download className="size-4" /> دانلود QR
-                        </button>
-                        <hr className="my-1 border-slate-100" />
-                        <button type="button" className="flex w-full items-center gap-2 px-4 py-2 text-sm text-destructive hover:bg-destructive/5" onClick={() => { setPatientToDelete(p); setOpenMenuId(null); }}>
-                          <Trash2 className="size-4" /> حذف
-                        </button>
-                      </div>
-                    )}
                   </div>
                 </div>
               ))}
@@ -436,6 +393,46 @@ export default function PatientsListPage() {
           </div>
         )}
       </div>
+
+      {/* Action menu portal: render outside table so it is never clipped */}
+      {typeof document !== "undefined" &&
+        openMenuId &&
+        menuPosition &&
+        (() => {
+          const p = patients.find((x) => x.id === openMenuId);
+          if (!p) return null;
+          return createPortal(
+            <div
+              ref={menuDropdownRef}
+              className="min-w-[180px] rounded-xl border border-slate-200 bg-white py-1 shadow-lg"
+              dir="rtl"
+              style={{
+                position: "fixed",
+                left: menuPosition.left,
+                top: menuPosition.top,
+                zIndex: 9999,
+              }}
+            >
+              <Link href={`/admin/patients/${p.id}`} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={() => setOpenMenuId(null)}>
+                <Pencil className="size-4" /> ویرایش
+              </Link>
+              <button type="button" className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={() => { setQrModalPatient(p); setOpenMenuId(null); }}>
+                <QrCode className="size-4" /> نمایش QR
+              </button>
+              <Link href={`/patient/${p.qrCodeId}`} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); }}>
+                <ExternalLink className="size-4" /> مشاهده صفحه
+              </Link>
+              <button type="button" className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={() => { handleDownloadQR(p); setOpenMenuId(null); }}>
+                <Download className="size-4" /> دانلود QR
+              </button>
+              <hr className="my-1 border-slate-100" />
+              <button type="button" className="flex w-full items-center gap-2 px-4 py-2 text-sm text-destructive hover:bg-destructive/5" onClick={() => { setPatientToDelete(p); setOpenMenuId(null); }}>
+                <Trash2 className="size-4" /> حذف
+              </button>
+            </div>,
+            document.body
+          );
+        })()}
 
       {/* QR modal: اول کاربر QR را می‌بیند، بعد می‌تواند دانلود یا مشاهده صفحه */}
       {qrModalPatient && (
